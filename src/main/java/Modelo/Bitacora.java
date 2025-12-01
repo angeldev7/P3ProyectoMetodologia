@@ -6,7 +6,6 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * Clase que representa un registro en la bitácora de auditoría
- * Fase: Implementación - Metodología Cascada
  */
 public class Bitacora implements Serializable {
     private static final long serialVersionUID = 1L;

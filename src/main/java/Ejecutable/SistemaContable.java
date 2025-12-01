@@ -4,12 +4,9 @@ import Vista.InterfazLoginMejorada;
 import Persistencia.MongoConnection;
 import Repositorio.impl.UsuarioRepositoryMongo;
 import Modelo.Usuario;
-import Modelo.TipoRol;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-//zzzzzz
-//iesnih
 /**
  * Clase principal ejecutable del Sistema Contable
  * Comercial el mejor vendedor S.A.
@@ -47,9 +44,9 @@ public class SistemaContable {
         try {
             UsuarioRepositoryMongo repo = new UsuarioRepositoryMongo();
             if (repo.findAll().isEmpty()) {
-                repo.save(new Usuario(null, "adminmaster", "adminmaster123", "Administrador Superior", TipoRol.ADMIN_MASTER));
-                repo.save(new Usuario(null, "admin", "admin123", "Jefatura Principal", TipoRol.JEFATURA_FINANCIERA));
-                repo.save(new Usuario(null, "asistente", "asistente123", "Asistente Contable", TipoRol.ASISTENTE_CONTABLE));
+                repo.save(new Usuario(null, "adminmaster", "adminmaster123", "Administrador Superior", Usuario.ROL_ADMIN_MASTER));
+                repo.save(new Usuario(null, "admin", "admin123", "Jefatura Principal", Usuario.ROL_JEFATURA_FINANCIERA));
+                repo.save(new Usuario(null, "asistente", "asistente123", "Asistente Contable", Usuario.ROL_ASISTENTE_CONTABLE));
             }
         } catch (Exception e) {
             javax.swing.JOptionPane.showMessageDialog(null, 

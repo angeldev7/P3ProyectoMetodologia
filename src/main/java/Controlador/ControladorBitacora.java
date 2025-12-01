@@ -10,7 +10,6 @@ import Repositorio.impl.BitacoraRepositoryMongo;
 /**
  * Controlador para gestión de la bitácora de auditoría
  * Persistencia MongoDB
- * Fase: Implementación - Metodología Cascada
  */
 public class ControladorBitacora {
     private static ControladorBitacora instancia;
@@ -22,10 +21,8 @@ public class ControladorBitacora {
         try {
             bitacoraRepository = new BitacoraRepositoryMongo();
             registros = bitacoraRepository.findAll();
-            System.out.println("🔄 Modo persistencia: MongoDB (bitácora)");
         } catch (Exception e) {
-            System.err.println("⚠️ MongoDB no disponible para bitácora: " + e.getMessage());
-            bitacoraRepository = null; // fallback no persistente (solo memoria)
+            bitacoraRepository = null;
         }
     }
     
@@ -47,8 +44,6 @@ public class ControladorBitacora {
         } else {
             registros.add(registro);
         }
-        // Log en consola
-        System.out.println("[BITÁCORA] " + registro.toString());
     }
     
     /**

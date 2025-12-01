@@ -5,10 +5,15 @@ import java.time.LocalDate;
 
 /**
  * Clase abstracta que representa una transacción contable
- * Fase: Implementación - Metodología Cascada
  */
 public abstract class Transaccion implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    // Estados de transacción
+    public static final String ESTADO_REGISTRADO = "Registrado";
+    public static final String ESTADO_APROBADO = "Aprobado";
+    public static final String ESTADO_RECHAZADO = "Rechazado";
+    public static final String ESTADO_ELIMINADO = "Eliminado";
     
     protected String idTransaccion; // ID legible (TRX-000001)
     protected LocalDate fecha;
@@ -31,7 +36,7 @@ public abstract class Transaccion implements Serializable {
         this.monto = monto;
         this.cuentaContable = cuentaContable;
         this.numeroDocumento = numeroDocumento;
-        this.estado = EstadoTransaccion.REGISTRADO;
+        this.estado = ESTADO_REGISTRADO;
         this.usuarioRegistro = usuarioRegistro;
     }
     

@@ -14,15 +14,19 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class UsuarioRepositoryMongo implements UsuarioRepository {
     private final MongoCollection<Document> collection;
+    private final MongoCollection<Document> rolesCollection;
     private final IdGenerator idGenerator;
 
     public UsuarioRepositoryMongo() {
         MongoDatabase database = MongoConnection.getInstancia().getDatabase();
         this.collection = database.getCollection("usuarios");
+        this.rolesCollection = database.getCollection("roles_personalizados");
         this.idGenerator = new IdGenerator(database);
     }
 
@@ -56,7 +60,8 @@ public class UsuarioRepositoryMongo implements UsuarioRepository {
                     .append("contrasena", usuario.getContrasena())
                     .append("nombreCompleto", usuario.getNombreCompleto())
                     .append("rol", usuario.getRol())
-                    .append("activo", usuario.isActivo());
+                    .append("activo", usuario.isActivo())
+                    .append("permisos", new ArrayList<>(usuario.getPermisos()));
             collection.insertOne(doc);
             return new Usuario(nuevoId, usuario.getNombreUsuario(), usuario.getContrasena(),
                     usuario.getNombreCompleto(), usuario.getRol());
@@ -68,7 +73,8 @@ public class UsuarioRepositoryMongo implements UsuarioRepository {
                     Updates.set("contrasena", usuario.getContrasena()),
                     Updates.set("nombreCompleto", usuario.getNombreCompleto()),
                     Updates.set("rol", usuario.getRol()),
-                    Updates.set("activo", usuario.isActivo())
+                    Updates.set("activo", usuario.isActivo()),
+                    Updates.set("permisos", new ArrayList<>(usuario.getPermisos()))
             );
             collection.updateOne(filter, updates);
             return usuario;
@@ -86,13 +92,46 @@ public class UsuarioRepositoryMongo implements UsuarioRepository {
     }
 
     private Usuario documentToUsuario(Document doc) {
-        return new Usuario(
+        String rol = doc.getString("rol");
+        Usuario usuario = new Usuario(
                 doc.getString("idUsuario"),
                 doc.getString("nombreUsuario"),
                 doc.getString("contrasena"),
                 doc.getString("nombreCompleto"),
-                doc.getString("rol"),
-                true // usarDirecto
+                rol
         );
+        
+        // Cargar permisos personalizados
+        @SuppressWarnings("unchecked")
+        List<String> permisosDoc = (List<String>) doc.get("permisos");
+        Set<String> permisos = new HashSet<>();
+        
+        if (permisosDoc != null && !permisosDoc.isEmpty()) {
+            // Si hay permisos guardados en el usuario, usarlos
+            permisos.addAll(permisosDoc);
+        } else if (!esRolPredeterminado(rol)) {
+            // Si es un rol personalizado y no tiene permisos guardados,
+            // cargar desde la colección de roles
+            Document rolDoc = rolesCollection.find(Filters.eq("nombreRol", rol)).first();
+            if (rolDoc != null) {
+                @SuppressWarnings("unchecked")
+                List<String> permisosRol = (List<String>) rolDoc.get("permisos");
+                if (permisosRol != null) {
+                    permisos.addAll(permisosRol);
+                }
+            }
+        }
+        
+        if (!permisos.isEmpty()) {
+            usuario.setPermisos(permisos);
+        }
+        
+        return usuario;
+    }
+    
+    private boolean esRolPredeterminado(String rol) {
+        return Usuario.ROL_ADMIN_MASTER.equals(rol) ||
+               Usuario.ROL_JEFATURA_FINANCIERA.equals(rol) ||
+               Usuario.ROL_ASISTENTE_CONTABLE.equals(rol);
     }
 }

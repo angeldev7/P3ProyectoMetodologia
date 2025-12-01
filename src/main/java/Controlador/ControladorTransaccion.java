@@ -11,7 +11,6 @@ import Repositorio.impl.TransaccionRepositoryMongo;
 /**
  * Controlador para gestión de transacciones contables
  * Persistencia MongoDB
- * Fase: Implementación - Metodología Cascada
  */
 public class ControladorTransaccion {
     private static ControladorTransaccion instancia;
@@ -24,9 +23,7 @@ public class ControladorTransaccion {
         try {
             transaccionRepository = new TransaccionRepositoryMongo();
             transacciones = transaccionRepository.findAll();
-            System.out.println("🔄 Modo persistencia: MongoDB (transacciones)");
         } catch (Exception e) {
-            System.err.println("⚠️ MongoDB no disponible para transacciones: " + e.getMessage());
             transaccionRepository = null;
             transacciones = new ArrayList<>();
         }
@@ -89,8 +86,8 @@ public class ControladorTransaccion {
         
         for (Transaccion t : transacciones) {
             if (t.getIdTransaccion().equals(idTransaccion)) {
-                t.setEstado(EstadoTransaccion.APROBADO);
-                if (transaccionRepository != null) transaccionRepository.updateEstado(idTransaccion, EstadoTransaccion.APROBADO);
+                t.setEstado(Transaccion.ESTADO_APROBADO);
+                if (transaccionRepository != null) transaccionRepository.updateEstado(idTransaccion, Transaccion.ESTADO_APROBADO);
                 controladorBitacora.registrar(usuario, "APROBAR_TRANSACCION", 
                     "Transacción #" + idTransaccion + " aprobada");
                 return true;
@@ -109,8 +106,8 @@ public class ControladorTransaccion {
         
         for (Transaccion t : transacciones) {
             if (t.getIdTransaccion().equals(idTransaccion)) {
-                t.setEstado(EstadoTransaccion.RECHAZADO);
-                if (transaccionRepository != null) transaccionRepository.updateEstado(idTransaccion, EstadoTransaccion.RECHAZADO);
+                t.setEstado(Transaccion.ESTADO_RECHAZADO);
+                if (transaccionRepository != null) transaccionRepository.updateEstado(idTransaccion, Transaccion.ESTADO_RECHAZADO);
                 controladorBitacora.registrar(usuario, "RECHAZAR_TRANSACCION", 
                     "Transacción #" + idTransaccion + " rechazada");
                 return true;
@@ -129,8 +126,8 @@ public class ControladorTransaccion {
         
         for (Transaccion t : transacciones) {
             if (t.getIdTransaccion().equals(idTransaccion) && 
-                t.getEstado().equals(EstadoTransaccion.REGISTRADO)) {
-                t.setEstado(EstadoTransaccion.ELIMINADO);
+                t.getEstado().equals(Transaccion.ESTADO_REGISTRADO)) {
+                t.setEstado(Transaccion.ESTADO_ELIMINADO);
                 if (transaccionRepository != null) transaccionRepository.eliminarLogico(idTransaccion);
                 controladorBitacora.registrar(usuario, "ELIMINAR_FACTURA", 
                     "Factura #" + idTransaccion + " eliminada");
@@ -145,7 +142,7 @@ public class ControladorTransaccion {
      */
     public List<Transaccion> getTransaccionesActivas() {
         return transacciones.stream()
-            .filter(t -> !t.getEstado().equals(EstadoTransaccion.ELIMINADO))
+            .filter(t -> !t.getEstado().equals(Transaccion.ESTADO_ELIMINADO))
             .collect(Collectors.toList());
     }
     
@@ -158,7 +155,7 @@ public class ControladorTransaccion {
         
         for (Transaccion t : transacciones) {
             if (t.getFecha().getYear() == anio && 
-                t.getEstado().equals(EstadoTransaccion.APROBADO)) {
+                t.getEstado().equals(Transaccion.ESTADO_APROBADO)) {
                 if (t instanceof Gasto) {
                     ivaCompras += ((Gasto) t).getIvaCompra();
                 }

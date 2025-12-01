@@ -1,7 +1,6 @@
 package Vista;
 
 import Controlador.ControladorUsuario;
-import Modelo.TipoRol;
 import Modelo.Usuario;
 import javax.swing.*;
 import java.awt.*;
@@ -180,13 +179,13 @@ public class InterfazLoginMejorada extends JFrame {
                 this.dispose();
                 
                 // Abrir ventana según rol
-                if (TipoRol.ADMIN_MASTER.equals(rol)) {
+                if (Usuario.ROL_ADMIN_MASTER.equals(rol)) {
                     // Admin Master → Dashboard de administración
                     SwingUtilities.invokeLater(() -> {
                         AdminMasterDashboard dashboard = new AdminMasterDashboard();
                         dashboard.setVisible(true);
                     });
-                } else if (TipoRol.JEFATURA_FINANCIERA.equals(rol) || TipoRol.ASISTENTE_CONTABLE.equals(rol)) {
+                } else if (Usuario.ROL_JEFATURA_FINANCIERA.equals(rol) || Usuario.ROL_ASISTENTE_CONTABLE.equals(rol)) {
                     // Jefatura o Asistente → Interfaz Principal
                     SwingUtilities.invokeLater(() -> {
                         InterfazPrincipal interfaz = new InterfazPrincipal();
@@ -197,19 +196,6 @@ public class InterfazLoginMejorada extends JFrame {
         } else {
             JOptionPane.showMessageDialog(this, "Credenciales incorrectas", "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-    
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        SwingUtilities.invokeLater(() -> {
-            InterfazLoginMejorada login = new InterfazLoginMejorada();
-            login.setVisible(true);
-        });
     }
 
     // Helper para estilo uniforme de botones

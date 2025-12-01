@@ -57,4 +57,9 @@ public class IdGenerator {
         long seq = nextSequence("BIT");
         return "BIT-" + String.format("%06d", seq);
     }
+    
+    public String nextRolId() {
+        long seq = nextSequence("ROL");
+        return "ROL-" + String.format("%03d", seq);
+    }
 }

@@ -10,12 +10,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * Interfaz Principal del Sistema Contable
- * Integración completa con controladores y modelo
- * Fase: Implementación - Metodología Cascada
  * Empresa: Comercial el mejor vendedor S.A.
- * 
- * @author Sistema Contable
- * @version 1.0.0
  */
 public class InterfazPrincipal extends JFrame {
     
@@ -45,7 +40,6 @@ public class InterfazPrincipal extends JFrame {
     private static final Color COLOR_PRIMARIO = new Color(41, 128, 185);
     private static final Color COLOR_SECUNDARIO = new Color(52, 152, 219);
     private static final Color COLOR_EXITO = new Color(39, 174, 96);
-    private static final Color COLOR_PELIGRO = new Color(231, 76, 60);
     private static final Color COLOR_ADVERTENCIA = new Color(243, 156, 18);
     private static final Color COLOR_FONDO = new Color(236, 240, 241);
 
@@ -342,7 +336,7 @@ public class InterfazPrincipal extends JFrame {
         
         JLabel lblFecha = new JLabel("Fecha: " + LocalDate.now().format(
             java.time.format.DateTimeFormatter.ofPattern("EEEE, dd 'de' MMMM 'de' yyyy", 
-            new java.util.Locale("es", "EC"))));
+            java.util.Locale.of("es", "EC"))));
         lblFecha.setFont(new Font("Arial", Font.PLAIN, 11));
         lblFecha.setForeground(new Color(236, 240, 241));
         panelDer.add(lblFecha);
@@ -581,7 +575,7 @@ public class InterfazPrincipal extends JFrame {
         Usuario usuario = controladorUsuario.getUsuarioActual();
         
         // Verificar permisos
-        if (!usuario.getRol().equals(TipoRol.JEFATURA_FINANCIERA)) {
+        if (!usuario.getRol().equals(Usuario.ROL_JEFATURA_FINANCIERA)) {
             mostrarError("❌ Acceso Denegado\n\n" +
                        "Solo los usuarios con rol de Jefatura Financiera\n" +
                        "pueden eliminar transacciones.\n\n" +
@@ -628,7 +622,7 @@ public class InterfazPrincipal extends JFrame {
                        "• La transacción ya fue aprobada\n" +
                        "• No tiene permisos suficientes\n" +
                        "• La transacción no existe\n\n" +
-                       "Solo se pueden eliminar transacciones en estado " + EstadoTransaccion.REGISTRADO + ".");
+                       "Solo se pueden eliminar transacciones en estado " + Transaccion.ESTADO_REGISTRADO + ".");
         }
     }
     
@@ -651,7 +645,7 @@ public class InterfazPrincipal extends JFrame {
         Usuario usuario = controladorUsuario.getUsuarioActual();
         
         // Verificar permisos
-        if (!usuario.getRol().equals(TipoRol.JEFATURA_FINANCIERA)) {
+        if (!usuario.getRol().equals(Usuario.ROL_JEFATURA_FINANCIERA)) {
             mostrarError("❌ Acceso Denegado\n\n" +
                        "Solo los usuarios con rol de Jefatura Financiera\n" +
                        "pueden aprobar transacciones.\n\n" +
@@ -660,10 +654,10 @@ public class InterfazPrincipal extends JFrame {
         }
         
         // Verificar que la transacción esté en estado REGISTRADO
-        if (!estado.equals(EstadoTransaccion.REGISTRADO)) {
+        if (!estado.equals(Transaccion.ESTADO_REGISTRADO)) {
             mostrarAdvertencia("⚠️ Esta transacción no puede ser aprobada\n\n" +
                              "Estado actual: " + estado + "\n\n" +
-                             "Solo se pueden aprobar transacciones en estado " + EstadoTransaccion.REGISTRADO + ".");
+                             "Solo se pueden aprobar transacciones en estado " + Transaccion.ESTADO_REGISTRADO + ".");
             return;
         }
         
@@ -773,7 +767,7 @@ public class InterfazPrincipal extends JFrame {
         Usuario usuario = controladorUsuario.getUsuarioActual();
         
         // Verificar permisos
-        if (!usuario.getRol().equals(TipoRol.JEFATURA_FINANCIERA)) {
+        if (!usuario.getRol().equals(Usuario.ROL_JEFATURA_FINANCIERA)) {
             mostrarError("❌ Acceso Denegado\n\n" +
                        "Solo los usuarios con rol de Jefatura Financiera\n" +
                        "pueden rechazar transacciones.\n\n" +
@@ -782,10 +776,10 @@ public class InterfazPrincipal extends JFrame {
         }
         
         // Verificar que la transacción esté en estado REGISTRADO
-        if (!estado.equals(EstadoTransaccion.REGISTRADO)) {
+        if (!estado.equals(Transaccion.ESTADO_REGISTRADO)) {
             mostrarAdvertencia("⚠️ Esta transacción no puede ser rechazada\n\n" +
                              "Estado actual: " + estado + "\n\n" +
-                             "Solo se pueden rechazar transacciones en estado " + EstadoTransaccion.REGISTRADO + ".");
+                             "Solo se pueden rechazar transacciones en estado " + Transaccion.ESTADO_REGISTRADO + ".");
             return;
         }
         
@@ -847,7 +841,7 @@ public class InterfazPrincipal extends JFrame {
         } else {
             mostrarError("❌ No se pudo rechazar la transacción\n\n" +
                        "Posibles causas:\n" +
-                       "• La transacción no está en estado " + EstadoTransaccion.REGISTRADO + "\n" +
+                       "• La transacción no está en estado " + Transaccion.ESTADO_REGISTRADO + "\n" +
                        "• La transacción no existe\n" +
                        "• Error en el sistema\n\n" +
                        "Contacte al administrador si el problema persiste.");
@@ -892,15 +886,15 @@ public class InterfazPrincipal extends JFrame {
             .sum();
         
         long registradas = transacciones.stream()
-            .filter(t -> t.getEstado().equals(EstadoTransaccion.REGISTRADO))
+            .filter(t -> t.getEstado().equals(Transaccion.ESTADO_REGISTRADO))
             .count();
         
         long aprobadas = transacciones.stream()
-            .filter(t -> t.getEstado().equals(EstadoTransaccion.APROBADO))
+            .filter(t -> t.getEstado().equals(Transaccion.ESTADO_APROBADO))
             .count();
         
         long rechazadas = transacciones.stream()
-            .filter(t -> t.getEstado().equals(EstadoTransaccion.RECHAZADO))
+            .filter(t -> t.getEstado().equals(Transaccion.ESTADO_RECHAZADO))
             .count();
         
         String mensaje = String.format(
@@ -1103,7 +1097,7 @@ public class InterfazPrincipal extends JFrame {
         
         // Obtener usuario actual y sus permisos
         Usuario usuarioActual = controladorUsuario.getUsuarioActual();
-        boolean esJefatura = usuarioActual.getRol().equals(TipoRol.JEFATURA_FINANCIERA);
+        boolean esJefatura = usuarioActual.getRol().equals(Usuario.ROL_JEFATURA_FINANCIERA);
         
         // Menú Archivo
         JMenu menuArchivo = new JMenu("Archivo");

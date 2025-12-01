@@ -117,7 +117,6 @@ public class TransaccionRepositoryMongo implements TransaccionRepository {
             LocalDate fecha = LocalDate.parse(doc.getString("fecha"), FORMATTER);
             String proveedorCliente = doc.getString("proveedorCliente");
             String cuentaContable = doc.getString("cuentaContable");
-            String numeroDoc = doc.getString("numeroDocumento");
             
             if ("Factura".equals(tipoTransaccion)) {
                 double subtotal = doc.getDouble("subtotal");
@@ -134,7 +133,6 @@ public class TransaccionRepositoryMongo implements TransaccionRepository {
             
             return null;
         } catch (Exception e) {
-            System.err.println("Error al convertir documento a transacción: " + e.getMessage());
             return null;
         }
     }
