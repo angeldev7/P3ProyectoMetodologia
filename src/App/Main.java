@@ -15,7 +15,7 @@ import util.MigradorContrasenas;
 import view.VentanaPrincipal;
 import view.VentanaLogin;
 
-public class Main {
+public class Main {//soy 
     private static ServicioAutenticacion servicioAuth; // DEBE ser estático y único
     private static VentanaPrincipal ventanaPrincipal;
     private static VentanaLogin ventanaLogin;
