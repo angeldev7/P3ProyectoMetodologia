@@ -1,35 +1,10 @@
-# Eclipse
-.classpath
+# Ignore configuration files
+config.properties
+
+# Ignore Eclipse project files
 .project
+.classpath
 .settings/
-bin/
-tmp/
-*.tmp
-*.bak
-*.swp
-*.patch
 
-# Archivos compilados
-*.class
-*.jar
-*.war
-*.ear
-
-# Logs
-*.log
-logs/
-
-# Archivos del sistema
-.DS_Store
-Thumbs.db
-
-# Maven
+# Ignore Maven target directory
 target/
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-
-# IDE
-*.launch
-*.pydevproject
-.metadata/
