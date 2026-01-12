@@ -1,6 +1,6 @@
 // App/Main.java
 package App;
-
+//11111
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -15,7 +15,7 @@ import util.MigradorContrasenas;
 import view.VentanaPrincipal;
 import view.VentanaLogin;
 
-public class Main {
+public class Main {//hola mundo
     private static ServicioAutenticacion servicioAuth; // DEBE ser estático y único
     private static VentanaPrincipal ventanaPrincipal;
     private static VentanaLogin ventanaLogin;
