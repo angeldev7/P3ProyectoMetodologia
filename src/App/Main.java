@@ -14,7 +14,7 @@ import model.InventarioDAO;  // CAMBIADO: De Inventario a InventarioDAO
 import util.MigradorContrasenas;
 import view.VentanaPrincipal;
 import view.VentanaLogin;
-
+//ESTO HICE YO JASJAJSAJSAJSJ
 public class Main {
     private static ServicioAutenticacion servicioAuth; // DEBE ser estático y único
     private static VentanaPrincipal ventanaPrincipal;
