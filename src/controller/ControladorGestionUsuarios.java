@@ -417,7 +417,9 @@ public class ControladorGestionUsuarios implements ActionListener {
     }
     private void cargarUsuarioSeleccionado() {
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
-        if (filaSeleccionada == -1) return;
+        if (filaSeleccionada == -1) {
+        	return;
+        }
         
         int filaModelo = vista.tablaUsuarios.convertRowIndexToModel(filaSeleccionada);
         String usuario = (String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0);
