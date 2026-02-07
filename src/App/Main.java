@@ -14,13 +14,11 @@ import model.InventarioDAO;  // CAMBIADO: De Inventario a InventarioDAO
 import util.MigradorContrasenas;
 import view.VentanaPrincipal;
 import view.VentanaLogin;
-//ESTO HICE YO JASJAJSAJSAJSJ
-//ELKINN GEY 
 public class Main {
-    private static ServicioAutenticacion servicioAuth; // DEBE ser estático y único
+    private static ServicioAutenticacion servicioAuth;
     private static VentanaPrincipal ventanaPrincipal;
     private static VentanaLogin ventanaLogin;
-    private static InventarioDAO inventario;  // NUEVO: Variable para InventarioDAO
+    private static InventarioDAO inventario;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
