@@ -132,7 +132,12 @@ public class DAOUsuario {
     }
     
     public Usuario buscarUsuarioPorNombre(String usuario) {
-        try {
+    	if (usuario == null || usuario.trim().isEmpty()) {
+    		System.err.println("⚠️ Nombre de usuario nulo o vacío");
+    		return null;
+    	}
+    	
+    	try {
             Document doc = coleccion.find(Filters.eq("usuario", usuario)).first();
             if (doc != null) {
                 return documentoAUsuario(doc);
@@ -190,7 +195,12 @@ public class DAOUsuario {
         }
     }
     private Usuario documentoAUsuario(Document doc) {
-        try {
+    	if (doc == null) {
+            System.err.println("⚠️ Documento nulo en documentoAUsuario");
+            return null;
+        }
+    	
+    	try {
             // Crear usuario con datos básicos
             Usuario usuario = new Usuario(
                 doc.getString("usuario"),

@@ -12,6 +12,7 @@ import model.CarritoCompra;
 import model.ItemCarrito;
 import view.VentanaPrincipal;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -30,19 +31,32 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     private AccesoSistemaDAO accesoDAO;
 
     public ControladorInventario(VentanaPrincipal vista, InventarioDAO  modelo) {
-        this.vista = vista;
+    	if (vista == null) {
+            throw new IllegalArgumentException("La vista no puede ser nula");
+        }
+        if (modelo == null) {
+            throw new IllegalArgumentException("El modelo no puede ser nulo");
+        }
+    	this.vista = vista;
         this.modelo = modelo;
         this.carrito = new CarritoCompra();
         this.accesoDAO = new AccesoSistemaDAO(); 
         
-        // Registrar listeners
-        this.vista.panelProductos.btnGuardarProducto.addActionListener(this);
-        this.vista.panelProductos.btnNuevoProducto.addActionListener(this);
-        this.vista.panelProductos.btnEliminarProducto.addActionListener(this);
-        this.vista.panelVentas.btnAgregarAlCarrito.addActionListener(this);
-        this.vista.panelVentas.btnEliminarDelCarrito.addActionListener(this);
-        this.vista.panelVentas.btnProcesarVenta.addActionListener(this);
-        this.vista.panelReportes.btnGenerarReporte.addActionListener(this);
+        // Registrar listeners validandolos
+        if(vista.panelProductos != null) {
+        	this.vista.panelProductos.btnGuardarProducto.addActionListener(this);
+            this.vista.panelProductos.btnNuevoProducto.addActionListener(this);
+            this.vista.panelProductos.btnEliminarProducto.addActionListener(this);
+        }
+        if(vista.panelVentas != null) {
+        	this.vista.panelVentas.btnAgregarAlCarrito.addActionListener(this);
+            this.vista.panelVentas.btnEliminarDelCarrito.addActionListener(this);
+            this.vista.panelVentas.btnProcesarVenta.addActionListener(this);
+        }
+        if(vista.panelReportes != null) {
+        	this.vista.panelReportes.btnGenerarReporte.addActionListener(this);
+        }
+        
         this.vista.panelProductos.tablaProductos.getSelectionModel().addListSelectionListener(this);
         this.vista.panelProductos.txtBuscar.getDocument().addDocumentListener(this);
         
@@ -161,14 +175,19 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
     
     private DatosProducto obtenerDatosDelFormulario() {
-    	return new DatosProducto(
-    	        vista.panelProductos.txtCodigo.getText().trim(),
-    	        vista.panelProductos.txtNombre.getText().trim(),
-    	        vista.panelProductos.txtDescripcion.getText().trim(),
-    	        vista.panelProductos.txtStock.getText().trim(),
-    	        vista.panelProductos.txtPrecio.getText().trim(),
-    	        vista.panelProductos.txtStockMinimo.getText().trim()
-    	    );
+        return new DatosProducto(
+            obtenerTextoSeguro(vista.panelProductos.txtCodigo),
+            obtenerTextoSeguro(vista.panelProductos.txtNombre),
+            vista.panelProductos.txtDescripcion.getText().trim(),
+            obtenerTextoSeguro(vista.panelProductos.txtStock),
+            obtenerTextoSeguro(vista.panelProductos.txtPrecio),
+            obtenerTextoSeguro(vista.panelProductos.txtStockMinimo)
+        );
+    }
+
+    // Método auxiliar para obtener texto seguro
+    private String obtenerTextoSeguro(JTextField campo) {
+        return (campo != null && campo.getText() != null) ? campo.getText().trim() : "";
     }
     
     private void validarDatosBasicos(DatosProducto datos) {
@@ -282,8 +301,13 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         }
     }
     private void agregarProductoAlCarrito() {
-        String codigoProducto = (String) vista.panelVentas.cmbProductos.getSelectedItem();
-        String cantidadStr = vista.panelVentas.txtCantidad.getText().trim();
+    	if (vista == null || vista.panelVentas == null) {
+            System.err.println("⚠️ Componentes de ventas no inicializados");
+            return;
+        }
+        
+        String codigoProducto = obtenerProductoSeleccionadoSeguro();
+        String cantidadStr = obtenerCantidadSegura();
 
         System.out.println("Intentando agregar al carrito:");
         System.out.println("  Código seleccionado: " + codigoProducto);
@@ -357,6 +381,18 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
                 "Por favor ingrese un número válido para la cantidad.", 
                 "Formato Inválido", JOptionPane.ERROR_MESSAGE);
         }
+    }
+    
+    private String obtenerProductoSeleccionadoSeguro() {
+        if (vista.panelVentas.cmbProductos == null) return "";
+        Object selected = vista.panelVentas.cmbProductos.getSelectedItem();
+        return (selected != null) ? selected.toString() : "";
+    }
+
+    private String obtenerCantidadSegura() {
+        if (vista.panelVentas.txtCantidad == null) return "";
+        String texto = vista.panelVentas.txtCantidad.getText();
+        return (texto != null) ? texto.trim() : "";
     }
 
     private void eliminarProductoDelCarrito() {
@@ -493,13 +529,35 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
 
     private void generarReporte() {
-        String tipoReporte = obtenerTipoReporteSeleccionado();
-        StringBuilder reporte = generarContenidoReporte(tipoReporte);
-        mostrarReporteEnVista(reporte);
+    	if (vista == null || vista.panelReportes == null) {
+            System.err.println("⚠️ Componentes de vista no inicializados para generar reporte");
+            return;
+        }
+        
+        try {
+            String tipoReporte = obtenerTipoReporteSeleccionado();
+            StringBuilder reporte = generarContenidoReporte(tipoReporte);
+            
+            if (reporte != null) {
+                mostrarReporteEnVista(reporte);
+            } else {
+                vista.panelReportes.txtReporte.setText("Error al generar el reporte.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error al generar reporte: " + e.getMessage());
+            if (vista.panelReportes.txtReporte != null) {
+                vista.panelReportes.txtReporte.setText("Error: " + e.getMessage());
+            }
+        }
     }
     
     private String obtenerTipoReporteSeleccionado() {
-        return (String) vista.panelReportes.cmbTipoReporte.getSelectedItem();
+    	if (vista == null || vista.panelReportes == null || vista.panelReportes.cmbTipoReporte == null) {
+            return "Catálogo de Productos"; // Valor por defecto
+        }
+        
+        Object selected = vista.panelReportes.cmbTipoReporte.getSelectedItem();
+        return (selected != null) ? selected.toString() : "Catálogo de Productos";
     }
     
     private StringBuilder generarContenidoReporte(String tipoReporte) {
@@ -533,15 +591,29 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
     
     private double agregarDetalleVentas(StringBuilder reporte) {
+    	if (reporte == null || modelo == null) return 0;
+        
+        Venta[] ventas = modelo.obtenerTodasVentas();
+        if (ventas == null) {
+            reporte.append("No hay datos de ventas disponibles.\n");
+            return 0;
+        }
+        
         double totalVentas = 0;
-        for (Venta venta : modelo.obtenerTodasVentas()) {
+        for (Venta venta : ventas) {
+            if (venta == null) continue;
+            
+            String nombre = venta.getNombreProducto() != null ? venta.getNombreProducto() : "Producto desconocido";
+            int cantidad = venta.getCantidad();
+            double total = venta.getTotal();
+            String fecha = venta.getFecha() != null ? venta.getFecha() : "Fecha desconocida";
+            
             String detalleVenta = String.format(
                 "Producto: %s | Cant: %d | Total: $%.2f | Fecha: %s\n",
-                venta.getNombreProducto(), venta.getCantidad(), 
-                venta.getTotal(), venta.getFecha()
+                nombre, cantidad, total, fecha
             );
             reporte.append(detalleVenta);
-            totalVentas += venta.getTotal();
+            totalVentas += total;
         }
         return totalVentas;
     }
@@ -615,24 +687,45 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
     
     private void agregarEncabezadoHistorialAccesos(StringBuilder reporte) {
-        reporte.append("=== HISTORIAL DE ACCESOS AL SISTEMA ===\n");
-        reporte.append("Fecha del reporte: ").append(LocalDate.now()).append("\n");
-        reporte.append("Generado por: ")
-               .append(App.Main.getServicioAutenticacion().getUsuarioActual())
-               .append("\n\n");
+    	 if (reporte == null) return;
+    	    
+    	    reporte.append("=== HISTORIAL DE ACCESOS AL SISTEMA ===\n");
+    	    reporte.append("Fecha del reporte: ").append(LocalDate.now()).append("\n");
+    	    
+    	    String usuarioActual = "Desconocido";
+    	    try {
+    	        usuarioActual = App.Main.getServicioAutenticacion().getUsuarioActual();
+    	        if (usuarioActual == null) {
+    	            usuarioActual = "Desconocido";
+    	        }
+    	    } catch (Exception e) {
+    	        System.err.println("Error obteniendo usuario actual: " + e.getMessage());
+    	    }
+    	    
+    	    reporte.append("Generado por: ").append(usuarioActual).append("\n\n");
     }
     
     private void agregarEstadisticasAccesos(StringBuilder reporte) {
-        long totalAccesos = accesoDAO.contarAccesosTotales();
-        long exitosos = accesoDAO.contarAccesosExitosos();
-        long fallidos = accesoDAO.contarAccesosFallidos();
-        double tasaExito = calcularTasaExito(totalAccesos, exitosos);
+    	if (reporte == null) return;
+        if (accesoDAO == null) {
+            reporte.append("⚠️ No se pudo acceder a las estadísticas de accesos (DAO no inicializado)\n\n");
+            return;
+        }
         
-        reporte.append("📊 ESTADÍSTICAS GENERALES:\n");
-        reporte.append(String.format("• Total de intentos de acceso: %d\n", totalAccesos));
-        reporte.append(String.format("• Accesos exitosos: %d\n", exitosos));
-        reporte.append(String.format("• Accesos fallidos: %d\n", fallidos));
-        reporte.append(String.format("• Tasa de éxito: %.2f%%\n\n", tasaExito));
+        try {
+            long totalAccesos = accesoDAO.contarAccesosTotales();
+            long exitosos = accesoDAO.contarAccesosExitosos();
+            long fallidos = accesoDAO.contarAccesosFallidos();
+            double tasaExito = calcularTasaExito(totalAccesos, exitosos);
+            
+            reporte.append("📊 ESTADÍSTICAS GENERALES:\n");
+            reporte.append(String.format("• Total de intentos de acceso: %d\n", totalAccesos));
+            reporte.append(String.format("• Accesos exitosos: %d\n", exitosos));
+            reporte.append(String.format("• Accesos fallidos: %d\n", fallidos));
+            reporte.append(String.format("• Tasa de éxito: %.2f%%\n\n", tasaExito));
+        } catch (Exception e) {
+            reporte.append("⚠️ Error al obtener estadísticas de accesos: ").append(e.getMessage()).append("\n\n");
+        }
     }
     
     private double calcularTasaExito(long totalAccesos, long exitosos) {
@@ -640,43 +733,65 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
 
     private void agregarDetalleAccesos(StringBuilder reporte) {
-        List<AccesoSistema> accesos = accesoDAO.obtenerTodosAccesos();
-        
-        reporte.append("📋 DETALLE DE ACCESOS (más recientes primero):\n");
-        reporte.append("----------------------------------------------------------------------------------------\n");
-        
-        if (accesos.isEmpty()) {
-            reporte.append("No hay registros de acceso en el sistema.\n");
+    	if (reporte == null) return;
+        if (accesoDAO == null) {
+            reporte.append("⚠️ No se pudo acceder al historial de accesos\n");
             return;
         }
         
-        int contador = 0;
-        for (AccesoSistema acceso : accesos) {
-            contador++;
-            agregarDetalleAcceso(reporte, acceso, contador);
+        try {
+            List<AccesoSistema> accesos = accesoDAO.obtenerTodosAccesos();
             
-            if (contador >= 50) {
-                reporte.append("\n⚠️ Mostrando solo los 50 accesos más recientes\n");
-                break;
+            reporte.append("📋 DETALLE DE ACCESOS (más recientes primero):\n");
+            reporte.append("----------------------------------------------------------------------------------------\n");
+            
+            if (accesos == null || accesos.isEmpty()) {
+                reporte.append("No hay registros de acceso en el sistema.\n");
+                return;
             }
+            
+            int contador = 0;
+            for (AccesoSistema acceso : accesos) {
+                if (acceso == null) continue; // ⚠️ Saltar accesos nulos
+                
+                contador++;
+                agregarDetalleAcceso(reporte, acceso, contador);
+                
+                if (contador >= 50) {
+                    reporte.append("\n⚠️ Mostrando solo los 50 accesos más recientes\n");
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            reporte.append("⚠️ Error al obtener detalle de accesos: ").append(e.getMessage()).append("\n");
         }
     }
 
     private void agregarDetalleAcceso(StringBuilder reporte, AccesoSistema acceso, int numero) {
-        String icono = obtenerIconoAcceso(acceso.getTipoAcceso());
+    	if (reporte == null || acceso == null) return;
+        
+        String tipoAcceso = acceso.getTipoAcceso();
+        String icono = obtenerIconoAcceso(tipoAcceso != null ? tipoAcceso : "DESCONOCIDO");
+        
+        String fechaHora = acceso.getFechaHora() != null ? acceso.getFechaHora() : "Fecha desconocida";
+        String usuario = acceso.getUsuario() != null ? acceso.getUsuario() : "Usuario desconocido";
+        String rol = acceso.getRol() != null ? acceso.getRol() : "Rol desconocido";
+        String mensaje = acceso.getMensaje() != null ? acceso.getMensaje() : "Sin mensaje";
         
         String cabeceraAcceso = String.format(
             "%s %d. [%s] Usuario: %-15s | Rol: %-15s\n",
-            icono, numero, acceso.getFechaHora(), 
-            acceso.getUsuario(), acceso.getRol()
+            icono, numero, fechaHora, usuario, rol
         );
         reporte.append(cabeceraAcceso);
         
-        String mensajeAcceso = String.format("   Mensaje: %s\n", acceso.getMensaje());
+        String mensajeAcceso = String.format("   Mensaje: %s\n", mensaje);
         reporte.append(mensajeAcceso);
     }
 
     private String obtenerIconoAcceso(String tipoAcceso) {
+    	if (tipoAcceso == null) {
+            return "❓";
+        }
         return tipoAcceso.equals("EXITOSO") ? "✅" : "❌";
     }
     
@@ -693,6 +808,16 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
     
     private void mostrarReporteEnVista(StringBuilder reporte) {
+    	if (vista == null || vista.panelReportes == null || vista.panelReportes.txtReporte == null) {
+            System.err.println("⚠️ Componentes de vista no disponibles para mostrar reporte");
+            return;
+        }
+        
+        if (reporte == null) {
+            vista.panelReportes.txtReporte.setText("No se pudo generar el reporte.");
+            return;
+        }
+        
         vista.panelReportes.txtReporte.setText(reporte.toString());
     }
 

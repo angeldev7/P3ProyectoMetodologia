@@ -44,12 +44,20 @@ public class ConexionBaseDatos {
             }
             
             clienteMongo = MongoClients.create(cadenaConexion);
+            if (clienteMongo == null) {
+                throw new ConexionBaseDatosException("No se pudo crear el cliente MongoDB");
+            }
+            
             baseDatos = clienteMongo.getDatabase(NOMBRE_BASE_DATOS);
+            if (baseDatos == null) {
+                throw new ConexionBaseDatosException("No se pudo obtener la base de datos: " + NOMBRE_BASE_DATOS);
+            }
+            
             baseDatos.runCommand(new Document("ping", 1));
             System.out.println("Conectado a la base de datos: " + NOMBRE_BASE_DATOS);
         } catch (Exception e) {
             System.err.println("Error al conectar a la base de datos: " + e.getMessage());
-            e.printStackTrace();
+            throw new ConexionBaseDatosException("Error al conectar a MongoDB", e);
         }
     }
     

@@ -85,21 +85,29 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
     }
     
-    private void guardarUsuario() {
-        String usuario = vista.txtUsuario.getText().trim();
-        String contrasena = new String(vista.txtContrasena.getPassword());
-        String nombreCompleto = vista.txtNombreCompleto.getText().trim();
-        String rol = (String) vista.cmbRol.getSelectedItem();
-        
-        if (usuario.isEmpty() || contrasena.isEmpty() || nombreCompleto.isEmpty() || rol == null) {
-            JOptionPane.showMessageDialog(vista, "Por favor complete todos los campos requeridos.", "Campos Incompletos", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        Usuario user = new Usuario(usuario, contrasena, nombreCompleto, rol);
-        
-        // Verificar si el usuario ya existe
-        Usuario usuarioExistente = daoUsuario.buscarUsuarioPorNombre(usuario);
+	private void guardarUsuario() {
+		if (vista == null) {
+			System.err.println("⚠️ Vista es nula en guardarUsuario");
+			return;
+		}
+
+		String usuario = vista.txtUsuario != null ? vista.txtUsuario.getText().trim() : "";
+		String contrasena = vista.txtContrasena != null ? new String(vista.txtContrasena.getPassword()) : "";
+		String nombreCompleto = vista.txtNombreCompleto != null ? vista.txtNombreCompleto.getText().trim() : "";
+		String rol = vista.cmbRol != null ? (String) vista.cmbRol.getSelectedItem() : null;
+
+		if (usuario.isEmpty() || contrasena.isEmpty() || nombreCompleto.isEmpty() || rol == null) {
+			if (vista != null) {
+				JOptionPane.showMessageDialog(vista, "Por favor complete todos los campos requeridos.",
+						"Campos Incompletos", JOptionPane.WARNING_MESSAGE);
+			}
+			return;
+		}
+
+		Usuario user = new Usuario(usuario, contrasena, nombreCompleto, rol);
+
+		// Verificar si el usuario ya existe
+		Usuario usuarioExistente = daoUsuario.buscarUsuarioPorNombre(usuario);
         if (usuarioExistente != null) {
             // Actualizar usuario existente
             if (daoUsuario.actualizarUsuario(usuario, user)) {
@@ -391,18 +399,35 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
     }
     private void cargarUsuariosDesdeBaseDatos() {
-        vista.modeloTablaUsuarios.setRowCount(0);
-        List<Usuario> usuarios = daoUsuario.obtenerTodosUsuarios();
-        for (Usuario usuario : usuarios) {
-            String estadoMostrar;
-            if (usuario.isBloqueado()) {
-                estadoMostrar = "🚫 BLOQUEADO";
-                if (usuario.getFechaBloqueo() != null) {
-                    estadoMostrar += " (" + usuario.getFechaBloqueo() + ")";
-                }
-            } else {
-                estadoMostrar = usuario.getEstado();
-            }
+		if (vista == null || vista.modeloTablaUsuarios == null) {
+			System.err.println("⚠️ Vista o modelo de tabla es nulo");
+			return;
+		}
+
+		vista.modeloTablaUsuarios.setRowCount(0);
+		List<Usuario> usuarios = daoUsuario.obtenerTodosUsuarios();
+
+		if (usuarios == null) {
+			System.err.println("⚠️ Lista de usuarios es nula");
+			return;
+		}
+
+		for (Usuario usuario : usuarios) {
+			if (usuario == null) {
+				continue; // Saltar usuarios nulos
+			}
+
+			String estadoMostrar;
+			if (usuario.isBloqueado()) {
+				estadoMostrar = "🚫 BLOQUEADO";
+				String fechaBloqueo = usuario.getFechaBloqueo();
+				if (fechaBloqueo != null && !fechaBloqueo.isEmpty()) {
+					estadoMostrar += " (" + fechaBloqueo + ")";
+				}
+			} else {
+				String estado = usuario.getEstado();
+				estadoMostrar = (estado != null) ? estado : "Activo";
+			}
             
             Object[] datosFila = {
                 usuario.getUsuario(),

@@ -56,18 +56,31 @@ public class ServicioAutenticacion {
     }
 
     public boolean autenticar(String usuario, String contrasena) {
-        System.out.println("Intentando autenticar usuario: " + usuario);
+    	System.out.println("Intentando autenticar usuario: " + usuario);
+        
+        // Validar entrada
+        if (usuario == null || contrasena == null) {
+            System.err.println("⚠️ Usuario o contraseña nulos");
+            return false;
+        }
         
         Usuario user = daoUsuario.buscarUsuarioPorNombre(usuario);
         if (user == null) {
             accesoDAO.registrarAcceso(new AccesoSistema(
-                usuario, 
+                usuario != null ? usuario : "NULO", 
                 "NO_ENCONTRADO", 
                 "FALLIDO", 
                 "Usuario no existe en el sistema"
             ));
             System.err.println("Usuario no encontrado: " + usuario);
             return false;
+        }
+        
+        // Verificar que el rol no sea null
+        String rolUsuario = user.getRol();
+        if (rolUsuario == null) {
+            rolUsuario = "SIN_ROL";
+            System.err.println("⚠️ Usuario " + usuario + " no tiene rol asignado");
         }
         
         if (user.isBloqueado()) {
@@ -129,15 +142,20 @@ public class ServicioAutenticacion {
     }
 
     public boolean tienePermiso(String permiso) {
-        if ("admin".equals(getUsuarioActual())) {
-            return true;
-        }
-        
-        if (rolActual == null) {
-            return false;
-        }
-        
-        return rolActual.tienePermiso(permiso);
+    	 if (permiso == null) {
+    	        return false;
+    	    }
+    	    
+    	    String usuarioActual = getUsuarioActual();
+    	    if (usuarioActual != null && "admin".equals(usuarioActual)) {
+    	        return true;
+    	    }
+    	    
+    	    if (rolActual == null) {
+    	        return false;
+    	    }
+    	    
+    	    return rolActual.tienePermiso(permiso);
     }
 
     public String getUsuarioActual() {
