@@ -14,6 +14,11 @@ import java.util.List;
 public class DAORol {
     private MongoCollection<Document> coleccion;
     
+    // Constructor para testing con inyección de dependencias
+    public DAORol(MongoCollection<Document> coleccion) {
+        this.coleccion = coleccion;
+    }
+    
     public DAORol() {
         this.coleccion = ConexionBaseDatos.getColeccion("roles");
     }

@@ -18,6 +18,13 @@ public class ControladorGestionUsuarios implements ActionListener {
     private DAOUsuario daoUsuario;
     private DAORol daoRol;
     
+    // Constructor para testing con inyección de dependencias
+    public ControladorGestionUsuarios(PanelGestionUsuarios vista, DAOUsuario daoUsuario, DAORol daoRol) {
+        this.vista = vista;
+        this.daoUsuario = daoUsuario;
+        this.daoRol = daoRol;
+    }
+    
     public ControladorGestionUsuarios(PanelGestionUsuarios vista) {
         this.vista = vista;
         this.daoUsuario = new DAOUsuario();

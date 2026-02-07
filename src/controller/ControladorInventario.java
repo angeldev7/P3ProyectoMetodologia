@@ -28,6 +28,14 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     private CarritoCompra carrito;
     private AccesoSistemaDAO accesoDAO;
 
+    // Constructor para testing con inyección de dependencias
+    public ControladorInventario(VentanaPrincipal vista, InventarioDAO modelo, CarritoCompra carrito, AccesoSistemaDAO accesoDAO) {
+        this.vista = vista;
+        this.modelo = modelo;
+        this.carrito = carrito;
+        this.accesoDAO = accesoDAO;
+    }
+
     public ControladorInventario(VentanaPrincipal vista, InventarioDAO  modelo) {
         this.vista = vista;
         this.modelo = modelo;
@@ -38,6 +46,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         this.vista.panelProductos.btnGuardarProducto.addActionListener(this);
         this.vista.panelProductos.btnNuevoProducto.addActionListener(this);
         this.vista.panelProductos.btnEliminarProducto.addActionListener(this);
+        this.vista.panelProductos.btnBuscarPorUbicacion.addActionListener(this); // NUEVO
         this.vista.panelVentas.btnAgregarAlCarrito.addActionListener(this);
         this.vista.panelVentas.btnEliminarDelCarrito.addActionListener(this);
         this.vista.panelVentas.btnProcesarVenta.addActionListener(this);
@@ -65,6 +74,8 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
             limpiarFormularioProducto();
         } else if (fuente == vista.panelProductos.btnEliminarProducto) {
             eliminarProducto();
+        } else if (fuente == vista.panelProductos.btnBuscarPorUbicacion) { // NUEVO
+            buscarPorUbicacion();
         } else if (fuente == vista.panelVentas.btnAgregarAlCarrito) {
             agregarProductoAlCarrito();
         } else if (fuente == vista.panelVentas.btnEliminarDelCarrito) {
@@ -106,6 +117,10 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         filtrarProductos();
     }
 
+    // Getters para testing
+    public CarritoCompra getCarrito() { return carrito; }
+    public InventarioDAO getModelo() { return modelo; }
+
     private void guardarProducto() {
     	String codigo = vista.panelProductos.txtCodigo.getText().trim();
         String nombre = vista.panelProductos.txtNombre.getText().trim();
@@ -113,6 +128,10 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         String stockStr = vista.panelProductos.txtStock.getText().trim();
         String precioStr = vista.panelProductos.txtPrecio.getText().trim(); 
         String stockMinimoStr = vista.panelProductos.txtStockMinimo.getText().trim();
+        // NUEVO: Obtener campos de ubicación
+        String pasillo = vista.panelProductos.txtPasillo.getText().trim();
+        String estante = vista.panelProductos.txtEstante.getText().trim();
+        String posicion = vista.panelProductos.txtPosicion.getText().trim();
 
         // Validación de campos vacíos
         if (codigo.isEmpty() || nombre.isEmpty() || stockStr.isEmpty() || precioStr.isEmpty() || stockMinimoStr.isEmpty()) {
@@ -153,14 +172,22 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
                 productoExistente.setStock(stock);
                 productoExistente.setPrecio(precio);
                 productoExistente.setStockMinimo(stockMinimo);
+                // NUEVO: Actualizar campos de ubicación
+                productoExistente.setPasillo(pasillo);
+                productoExistente.setEstante(estante);
+                productoExistente.setPosicion(posicion);
                 
                 // Nota: El InventarioDAO ya actualiza MongoDB automáticamente
-                JOptionPane.showMessageDialog(vista, "Producto actualizado exitosamente.", "Actualización Exitosa", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(vista, 
+                    "Producto actualizado exitosamente.\nUbicación: " + productoExistente.getUbicacionCompleta(), 
+                    "Actualización Exitosa", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                // Crear nuevo producto - MongoDB se guarda automáticamente
-                Producto nuevoProducto = new Producto(codigo, nombre, descripcion, stock, precio, stockMinimo);
+                // Crear nuevo producto con ubicación - MongoDB se guarda automáticamente
+                Producto nuevoProducto = new Producto(codigo, nombre, descripcion, stock, precio, stockMinimo, pasillo, estante, posicion);
                 modelo.agregarProducto(nuevoProducto);
-                JOptionPane.showMessageDialog(vista, "Producto guardado exitosamente en la base de datos.", "Guardado Exitoso", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(vista, 
+                    "Producto guardado exitosamente en la base de datos.\nUbicación asignada: " + nuevoProducto.getUbicacionCompleta(), 
+                    "Guardado Exitoso", JOptionPane.INFORMATION_MESSAGE);
             }
             
             actualizarTablaProductos();
@@ -192,14 +219,14 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
             boolean eliminado = modelo.eliminarProducto(codigo);
             if (eliminado) {
                 JOptionPane.showMessageDialog(vista, 
-                    "✅ Producto eliminado exitosamente de la base de datos.", 
+                    "Producto eliminado exitosamente de la base de datos.", 
                     "Eliminación Exitosa", JOptionPane.INFORMATION_MESSAGE);
                 actualizarTablaProductos();
                 cargarProductosAlCombo();
                 limpiarFormularioProducto();
             } else {
                 JOptionPane.showMessageDialog(vista, 
-                    "❌ No se pudo eliminar el producto.", 
+                    "No se pudo eliminar el producto.", 
                     "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
@@ -267,7 +294,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
             actualizarCarritoEnVista();
             
             JOptionPane.showMessageDialog(vista, 
-                "✅ Producto agregado al carrito:\n" + 
+                "Producto agregado al carrito:\n" + 
                 producto.getNombre() + " x " + cantidad + 
                 "\nSubtotal: $" + String.format("%.2f", producto.getPrecio() * cantidad), 
                 "Producto Agregado", JOptionPane.INFORMATION_MESSAGE);
@@ -324,10 +351,10 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         for (ItemCarrito item : carrito.getItems()) {
             Producto producto = modelo.buscarProductoPorCodigo(item.getCodigoProducto());
             if (producto == null) {
-                erroresStock.append("❌ El producto '").append(item.getNombreProducto())
+                erroresStock.append("El producto '").append(item.getNombreProducto())
                            .append("' ya no está disponible.\n");
             } else if (producto.getStock() < item.getCantidad()) {
-                erroresStock.append("❌ Stock insuficiente para '").append(item.getNombreProducto())
+                erroresStock.append("Stock insuficiente para '").append(item.getNombreProducto())
                            .append("'\n  Disponible: ").append(producto.getStock())
                            .append(" | Solicitado: ").append(item.getCantidad()).append("\n");
             }
@@ -342,7 +369,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
 
         // Confirmar venta con resumen
         StringBuilder resumen = new StringBuilder();
-        resumen.append("🎯 RESUMEN DE VENTA\n\n");
+        resumen.append("RESUMEN DE VENTA\n\n");
         resumen.append("Productos a vender:\n");
         
         for (ItemCarrito item : carrito.getItems()) {
@@ -382,10 +409,10 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
             }
             
             JOptionPane.showMessageDialog(vista, 
-                "✅ ¡VENTA PROCESADA EXITOSAMENTE!\n\n" +
-                "📦 Productos vendidos: " + carrito.getCantidadItems() + "\n" +
-                "💰 Total: $" + String.format("%.2f", carrito.getTotal()) + "\n" +
-                "📝 Stock actualizado correctamente", 
+                "¡VENTA PROCESADA EXITOSAMENTE!\n\n" +
+                "Productos vendidos: " + carrito.getCantidadItems() + "\n" +
+                "Total: $" + String.format("%.2f", carrito.getTotal()) + "\n" +
+                "Stock actualizado correctamente", 
                 "Venta Completada", 
                 JOptionPane.INFORMATION_MESSAGE);
            
@@ -470,27 +497,27 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
                 long exitosos = accesoDAO.contarAccesosExitosos();
                 long fallidos = accesoDAO.contarAccesosFallidos();
                 
-                reporte.append("📊 ESTADÍSTICAS GENERALES:\n");
+                reporte.append("ESTADÍSTICAS GENERALES:\n");
                 reporte.append(String.format("• Total de intentos de acceso: %d\n", totalAccesos));
                 reporte.append(String.format("• Accesos exitosos: %d\n", exitosos));
                 reporte.append(String.format("• Accesos fallidos: %d\n", fallidos));
                 reporte.append(String.format("• Tasa de éxito: %.2f%%\n\n", 
                     totalAccesos > 0 ? (exitosos * 100.0 / totalAccesos) : 0));
                 
-                reporte.append("📋 DETALLE DE ACCESOS (más recientes primero):\n");
+                reporte.append("DETALLE DE ACCESOS (más recientes primero):\n");
                 reporte.append("----------------------------------------------------------------------------------------\n");
                 
                 int contador = 0;
                 for (AccesoSistema acceso : accesos) {
                     contador++;
-                    String icono = acceso.getTipoAcceso().equals("EXITOSO") ? "✅" : "❌";
+                    String icono = acceso.getTipoAcceso().equals("EXITOSO") ? "[OK]" : "[ERROR]";
                     reporte.append(String.format("%s %d. [%s] Usuario: %-15s | Rol: %-15s\n", 
                         icono, contador, acceso.getFechaHora(), acceso.getUsuario(), acceso.getRol()));
                     reporte.append(String.format("   Mensaje: %s\n", acceso.getMensaje()));
                     
                     // Mostrar solo los últimos 50 accesos para no saturar el reporte
                     if (contador >= 50) {
-                        reporte.append("\n⚠️ Mostrando solo los 50 accesos más recientes\n");
+                        reporte.append("\nMostrando solo los 50 accesos más recientes\n");
                         break;
                     }
                 }
@@ -514,6 +541,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
                 producto.getStock(),
                 String.format("$%.2f", producto.getPrecio()),
                 producto.getStockMinimo(),
+                producto.getUbicacionCompleta(), // NUEVO: Columna de ubicación
                 producto.getStock() <= producto.getStockMinimo() ? "STOCK BAJO" : "OK"
             };
             vista.panelProductos.modeloTabla.addRow(datosFila);
@@ -540,33 +568,28 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         
         vista.panelVentas.cmbProductos.removeAllItems();
         
-        // Verificar si modelo es InventarioDAO
-        if (modelo instanceof InventarioDAO) {
-            InventarioDAO inventarioDAO = (InventarioDAO) modelo;
-            int productosConStock = 0;
-            
-            // Obtener todos los productos
-            Producto[] productos = inventarioDAO.obtenerTodosProductos();
-            
-            for (Producto producto : productos) {
-                if (producto.getStock() > 0) {
-                    vista.panelVentas.cmbProductos.addItem(producto.getCodigo());
-                    productosConStock++;
-                    System.out.println("  Agregado: " + producto.getCodigo() + " - " + producto.getNombre());
-                }
+        // Como modelo ya es InventarioDAO, no necesitamos verificación
+        int productosConStock = 0;
+        
+        // Obtener todos los productos
+        Producto[] productos = modelo.obtenerTodosProductos();
+        
+        for (Producto producto : productos) {
+            if (producto.getStock() > 0) {
+                vista.panelVentas.cmbProductos.addItem(producto.getCodigo());
+                productosConStock++;
+                System.out.println("  Agregado: " + producto.getCodigo() + " - " + producto.getNombre());
             }
-            
-            System.out.println("Total productos con stock agregados: " + productosConStock);
-            
-            if (productosConStock == 0) {
-                System.out.println("Advertencia: No hay productos con stock disponible");
-                JOptionPane.showMessageDialog(vista, 
-                    "No hay productos con stock disponible en la base de datos.\n" +
-                    "Por favor agregue productos primero.", 
-                    "Sin Stock", JOptionPane.WARNING_MESSAGE);
-            }
-        } else {
-            System.err.println("❌ Error: El modelo no es InventarioDAO");
+        }
+        
+        System.out.println("Total productos con stock agregados: " + productosConStock);
+        
+        if (productosConStock == 0) {
+            System.out.println("Advertencia: No hay productos con stock disponible");
+            JOptionPane.showMessageDialog(vista, 
+                "No hay productos con stock disponible en la base de datos.\n" +
+                "Por favor agregue productos primero.", 
+                "Sin Stock", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -577,6 +600,10 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         vista.panelProductos.txtStock.setText("");
         vista.panelProductos.txtPrecio.setText("");
         vista.panelProductos.txtStockMinimo.setText("");
+        // NUEVO: Limpiar campos de ubicación
+        vista.panelProductos.txtPasillo.setText("");
+        vista.panelProductos.txtEstante.setText("");
+        vista.panelProductos.txtPosicion.setText("");
         vista.panelProductos.tablaProductos.clearSelection();
         vista.panelProductos.txtCodigo.setEditable(true);
     }
@@ -588,11 +615,99 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         vista.panelProductos.txtStock.setText(String.valueOf(producto.getStock()));
         vista.panelProductos.txtPrecio.setText(String.format("$%.2f", producto.getPrecio())); 
         vista.panelProductos.txtStockMinimo.setText(String.valueOf(producto.getStockMinimo()));
+        // NUEVO: Llenar campos de ubicación
+        vista.panelProductos.txtPasillo.setText(producto.getPasillo());
+        vista.panelProductos.txtEstante.setText(producto.getEstante());
+        vista.panelProductos.txtPosicion.setText(producto.getPosicion());
         vista.panelProductos.txtCodigo.setEditable(false);
     }
 
     private void filtrarProductos() {
         String consulta = vista.panelProductos.txtBuscar.getText();
         vista.panelProductos.filtrarTabla(consulta);
+    }
+    
+    // NUEVO: Método para buscar por ubicación
+    private void buscarPorUbicacion() {
+        String pasillo = JOptionPane.showInputDialog(vista, 
+            "Ingrese el pasillo a buscar (deje vacío para cualquier pasillo):", 
+            "Búsqueda por Ubicación", 
+            JOptionPane.QUESTION_MESSAGE);
+        
+        // Si el usuario cancela, pasillo será null
+        if (pasillo == null) {
+            return;
+        }
+        
+        String estante = JOptionPane.showInputDialog(vista, 
+            "Ingrese el estante a buscar (deje vacío para cualquier estante):", 
+            "Búsqueda por Ubicación", 
+            JOptionPane.QUESTION_MESSAGE);
+            
+        if (estante == null) {
+            return;
+        }
+        
+        String posicion = JOptionPane.showInputDialog(vista, 
+            "Ingrese la posición a buscar (deje vacío para cualquier posición):", 
+            "Búsqueda por Ubicación", 
+            JOptionPane.QUESTION_MESSAGE);
+            
+        if (posicion == null) {
+            return;
+        }
+        
+        // Buscar productos que coincidan
+        java.util.List<Producto> productosEncontrados = new java.util.ArrayList<>();
+        
+        for (Producto producto : modelo.obtenerTodosProductos()) {
+            boolean coincidenPasillo = pasillo.trim().isEmpty() || 
+                producto.getPasillo().toLowerCase().contains(pasillo.trim().toLowerCase());
+            boolean coincidenEstante = estante.trim().isEmpty() || 
+                producto.getEstante().toLowerCase().contains(estante.trim().toLowerCase());
+            boolean coincidenPosicion = posicion.trim().isEmpty() || 
+                producto.getPosicion().toLowerCase().contains(posicion.trim().toLowerCase());
+                
+            if (coincidenPasillo && coincidenEstante && coincidenPosicion) {
+                productosEncontrados.add(producto);
+            }
+        }
+        
+        // Mostrar resultados
+        if (productosEncontrados.isEmpty()) {
+            JOptionPane.showMessageDialog(vista, 
+                "No se encontraron productos en la ubicación especificada.\n" +
+                "Pasillo: " + (pasillo.trim().isEmpty() ? "[Cualquiera]" : pasillo) + "\n" +
+                "Estante: " + (estante.trim().isEmpty() ? "[Cualquiera]" : estante) + "\n" +
+                "Posición: " + (posicion.trim().isEmpty() ? "[Cualquiera]" : posicion),
+                "Sin Resultados", 
+                JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            // Filtrar la tabla para mostrar solo los productos encontrados
+            vista.panelProductos.modeloTabla.setRowCount(0);
+            
+            for (Producto producto : productosEncontrados) {
+                Object[] datosFila = {
+                    producto.getCodigo(),
+                    producto.getNombre(),
+                    producto.getDescripcion(),
+                    producto.getStock(),
+                    String.format("$%.2f", producto.getPrecio()),
+                    producto.getStockMinimo(),
+                    producto.getUbicacionCompleta(),
+                    producto.getStock() <= producto.getStockMinimo() ? "STOCK BAJO" : "OK"
+                };
+                vista.panelProductos.modeloTabla.addRow(datosFila);
+            }
+            
+            JOptionPane.showMessageDialog(vista, 
+                "Se encontraron " + productosEncontrados.size() + " producto(s) en la ubicación especificada.\n" +
+                "Pasillo: " + (pasillo.trim().isEmpty() ? "[Cualquiera]" : pasillo) + "\n" +
+                "Estante: " + (estante.trim().isEmpty() ? "[Cualquiera]" : estante) + "\n" +
+                "Posición: " + (posicion.trim().isEmpty() ? "[Cualquiera]" : posicion) + "\n\n" +
+                "Para ver todos los productos nuevamente, use el botón 'Nuevo Producto'.",
+                "Productos Encontrados", 
+                JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 }

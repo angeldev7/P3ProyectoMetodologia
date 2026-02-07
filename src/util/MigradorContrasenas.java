@@ -23,6 +23,6 @@ public class MigradorContrasenas {
             }
         }
         
-        System.out.println("✅ Migración completada: " + migrados + " usuarios migrados");
+        System.out.println("Migración completada: " + migrados + " usuarios migrados");
     }
 }
