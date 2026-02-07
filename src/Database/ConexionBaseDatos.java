@@ -37,7 +37,7 @@ public class ConexionBaseDatos {
         try {
             String cadenaConexion = getConnectionString();
             if (cadenaConexion == null || cadenaConexion.isEmpty()) {
-                throw new IllegalStateException("La cadena de conexión está vacía o no se pudo cargar desde config.properties");
+            	throw new ConexionBaseDatosException("La cadena de conexion esta vacia o no se pudo cargar desde config.properties");
             }
             
             clienteMongo = MongoClients.create(cadenaConexion);
