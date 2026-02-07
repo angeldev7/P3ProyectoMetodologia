@@ -79,7 +79,6 @@
                     <showDeprecation>true</showDeprecation>
                     <compilerArgs>
                         <arg>-Xlint:all</arg>
-                        <arg>-Xlint:-this-escape</arg>
                     </compilerArgs>
                 </configuration>
                 <executions>
