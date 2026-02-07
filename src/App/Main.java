@@ -1,8 +1,6 @@
 // App/Main.java
 package App;
 
-import java.util.List;
-
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -15,7 +13,9 @@ import util.MigradorContrasenas;
 import view.VentanaPrincipal;
 import view.VentanaLogin;
 
-public class Main {//soy 
+import java.util.List;
+
+public class Main {
     private static ServicioAutenticacion servicioAuth; // DEBE ser estático y único
     private static VentanaPrincipal ventanaPrincipal;
     private static VentanaLogin ventanaLogin;
@@ -36,6 +36,9 @@ public class Main {//soy
                 }
                 
                 ConexionBaseDatos.conectar();
+                
+                // Ejecutar migración de contraseñas si es necesario
+                MigradorContrasenas.migrarUsuariosExistentes();
                 
                 // Inicializar servicios
                 servicioAuth = new ServicioAutenticacion();
@@ -92,7 +95,7 @@ public class Main {//soy
         System.out.println("Permisos: " + permisos);
         
         // Configurar título
-        ventanaPrincipal.setTitle("Ferretería Carlín - Sistema de Gestión (Usuario: " + usuario + " | Rol: " + rol + ")");
+        ventanaPrincipal.setTitle("Ferretería Carlin - Sistema de Gestión (Usuario: " + usuario + " | Rol: " + rol + ")");
         
         // Aplicar permisos según el rol
         if (permisos != null && !permisos.isEmpty()) {

@@ -19,6 +19,11 @@ import util.PasswordHasher;
 public class DAOUsuario {
     private MongoCollection<Document> coleccion;
     
+    // Constructor para testing con inyección de dependencias
+    public DAOUsuario(MongoCollection<Document> coleccion) {
+        this.coleccion = coleccion;
+    }
+    
     public DAOUsuario() {
         this.coleccion = ConexionBaseDatos.getColeccion("usuarios");
     }
