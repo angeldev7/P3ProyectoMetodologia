@@ -8,6 +8,9 @@ import com.mongodb.client.model.Updates;
 import com.mongodb.client.model.IndexOptions;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import model.Producto;
 import Database.ConexionBaseDatos;
 import java.util.ArrayList;
@@ -15,6 +18,7 @@ import java.util.List;
 
 public class ProductoDAO {
     private MongoCollection<Document> coleccionProductos;
+    private static final Logger logger = LoggerFactory.getLogger(ProductoDAO.class);
     
     public ProductoDAO() {
         this.coleccionProductos = ConexionBaseDatos.getColeccion("productos");
@@ -42,9 +46,9 @@ public class ProductoDAO {
                 .append("stockMinimo", producto.getStockMinimo());
             
             coleccionProductos.insertOne(docProducto);
-            System.out.println("Producto guardado: " + producto.getCodigo());
+            logger.info("Producto guardado: " + producto.getCodigo());
         } catch (Exception e) {
-            System.err.println("Error al guardar producto: " + e.getMessage());
+            logger.error("Error al guardar producto: " + e.getMessage());
         }
     }
     
@@ -62,9 +66,9 @@ public class ProductoDAO {
             );
             
             coleccionProductos.updateOne(filtro, actualizacion);
-            System.out.println("Producto actualizado: " + producto.getCodigo());
+            logger.info("Producto actualizado: " + producto.getCodigo());
         } catch (Exception e) {
-            System.err.println("Error al actualizar producto: " + e.getMessage());
+            logger.error("Error al actualizar producto: " + e.getMessage());
         }
     }
     
@@ -72,9 +76,9 @@ public class ProductoDAO {
         try {
             Bson filtro = Filters.eq("codigo", codigo);
             coleccionProductos.deleteOne(filtro);
-            System.out.println("Producto eliminado: " + codigo);
+            logger.info("Producto eliminado: " + codigo);
         } catch (Exception e) {
-            System.err.println("Error al eliminar producto: " + e.getMessage());
+            logger.error("Error al eliminar producto: " + e.getMessage());
         }
     }
     
@@ -87,7 +91,7 @@ public class ProductoDAO {
                 return convertirDocumentAProducto(doc);
             }
         } catch (Exception e) {
-            System.err.println("Error al buscar producto: " + e.getMessage());
+            logger.error("Error al buscar producto: " + e.getMessage());
         }
         return null;
     }
@@ -98,9 +102,9 @@ public class ProductoDAO {
             for (Document doc : coleccionProductos.find()) {
                 productos.add(convertirDocumentAProducto(doc));
             }
-            System.out.println("Productos obtenidos: " + productos.size());
+            logger.info("Productos obtenidos: " + productos.size());
         } catch (Exception e) {
-            System.err.println("Error al obtener productos: " + e.getMessage());
+            logger.error("Error al obtener productos: " + e.getMessage());
         }
         return productos;
     }
@@ -112,9 +116,9 @@ public class ProductoDAO {
             for (Document doc : coleccionProductos.find(filtro)) {
                 productos.add(convertirDocumentAProducto(doc));
             }
-            System.out.println("✅ Productos con stock obtenidos: " + productos.size());
+            logger.info("✅ Productos con stock obtenidos: " + productos.size());
         } catch (Exception e) {
-            System.err.println("❌ Error al obtener productos con stock: " + e.getMessage());
+            logger.error("❌ Error al obtener productos con stock: " + e.getMessage());
             e.printStackTrace();
         }
         return productos;
@@ -127,9 +131,9 @@ public class ProductoDAO {
                 new Document("stock", nuevoStock));
             
             coleccionProductos.updateOne(filtro, actualizacion);
-            System.out.println("✅ Stock actualizado en MongoDB: " + codigo + " -> " + nuevoStock);
+            logger.info("✅ Stock actualizado en MongoDB: " + codigo + " -> " + nuevoStock);
         } catch (Exception e) {
-            System.err.println("❌ Error al actualizar stock en MongoDB: " + e.getMessage());
+            logger.error("❌ Error al actualizar stock en MongoDB: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -139,7 +143,7 @@ public class ProductoDAO {
             Bson filtro = Filters.eq("codigo", codigo);
             return coleccionProductos.countDocuments(filtro) > 0;
         } catch (Exception e) {
-            System.err.println("❌ Error al verificar existencia de producto: " + e.getMessage());
+            logger.error("❌ Error al verificar existencia de producto: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -149,7 +153,7 @@ public class ProductoDAO {
         try {
             return coleccionProductos.countDocuments();
         } catch (Exception e) {
-            System.err.println("❌ Error al contar productos: " + e.getMessage());
+            logger.error("❌ Error al contar productos: " + e.getMessage());
             e.printStackTrace();
             return 0;
         }

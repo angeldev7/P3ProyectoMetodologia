@@ -7,10 +7,12 @@ import javax.swing.border.*;
 import java.awt.*;
 import model.CarritoCompra;
 import model.ItemCarrito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PanelVentas extends JPanel {
     private static final long serialVersionUID = 1L;
-    
+    private static final Logger logger = LoggerFactory.getLogger(PanelVentas.class);
     // Componentes para carrito
     public JComboBox<String> cmbProductos;
     public JTextField txtCantidad;
@@ -249,7 +251,7 @@ public class PanelVentas extends JPanel {
         if (modeloCarrito != null && carrito != null) {
             modeloCarrito.setRowCount(0); // Limpiar tabla primero
             
-            System.out.println("Actualizando tabla del carrito. Items: " + carrito.getItems().size());
+            logger.info("Actualizando tabla del carrito. Items: " + carrito.getItems().size());
             
             for (ItemCarrito item : carrito.getItems()) {
                 Object[] fila = {
@@ -260,7 +262,7 @@ public class PanelVentas extends JPanel {
                     String.format("$%.2f", item.getSubtotal())
                 };
                 modeloCarrito.addRow(fila);
-                System.out.println("Agregado a tabla: " + item.getNombreProducto() + " x " + item.getCantidad());
+                logger.info("Agregado a tabla: " + item.getNombreProducto() + " x " + item.getCantidad());
             }
             
             // Actualizar total y cantidad
@@ -271,15 +273,15 @@ public class PanelVentas extends JPanel {
             modeloCarrito.fireTableDataChanged();
             repaint();
             
-            System.out.println("Tabla del carrito actualizada. Total: $" + carrito.getTotal());
+            logger.info("Tabla del carrito actualizada. Total: $" + carrito.getTotal());
         } else {
-            System.err.println("❌ Error: carrito o modeloCarrito es null");
+            logger.error("❌ Error: carrito o modeloCarrito es null");
         }
     }
 
     public void setCarrito(CarritoCompra carrito) {
         this.carrito = carrito;
-        System.out.println("Carrito asignado al panel de ventas");
+        logger.info("Carrito asignado al panel de ventas");
         actualizarCarritoEnTabla();
     }
 

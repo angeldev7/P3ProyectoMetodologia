@@ -8,10 +8,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import App.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class VentanaPrincipal extends JFrame {
     private static final long serialVersionUID = 1L;
-    
+    private static final Logger logger = LoggerFactory.getLogger(VentanaPrincipal.class);
     // Paneles principales
     public PanelProductos panelProductos;
     public PanelVentas panelVentas;
@@ -145,7 +148,7 @@ public class VentanaPrincipal extends JFrame {
     
     // Métodos públicos para controlar la interfaz
     public void aplicarPermisos(List<String> permisos) {
-        System.out.println("Aplicando permisos: " + permisos);
+        logger.info("Aplicando permisos: " + permisos);
         
         // Habilitar/deshabilitar pestañas según permisos
         if (permisos == null || permisos.isEmpty()) {
@@ -173,18 +176,18 @@ public class VentanaPrincipal extends JFrame {
                                         permisos.contains("admin");
         panelPestanas.setEnabledAt(3, puedeGestionarUsuarios);
         
-        System.out.println("Permisos aplicados:");
-        System.out.println("  Gestión Productos: " + puedeGestionarProductos);
-        System.out.println("  Ventas: " + puedeVender);
-        System.out.println("  Reportes: " + puedeVerReportes);
-        System.out.println("  Gestión Usuarios: " + puedeGestionarUsuarios);
+        logger.info("Permisos aplicados:");
+        logger.info("  Gestión Productos: " + puedeGestionarProductos);
+        logger.info("  Ventas: " + puedeVender);
+        logger.info("  Reportes: " + puedeVerReportes);
+        logger.info("  Gestión Usuarios: " + puedeGestionarUsuarios);
     }
     
     public void habilitarTodasLasPestanas() {
         for (int i = 0; i < panelPestanas.getTabCount(); i++) {
             panelPestanas.setEnabledAt(i, true);
         }
-        System.out.println("Todas las pestañas habilitadas");
+        logger.info("Todas las pestañas habilitadas");
     }
     
     public void setTitle(String title) {

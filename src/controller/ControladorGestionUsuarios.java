@@ -7,6 +7,10 @@ import model.Rol;
 import DAO.DAOUsuario;
 import DAO.DAORol;
 import javax.swing.JOptionPane;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -14,6 +18,7 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 
 public class ControladorGestionUsuarios implements ActionListener {
+	private static final Logger logger = LoggerFactory.getLogger(ControladorGestionUsuarios.class);
     private PanelGestionUsuarios vista;
     private DAOUsuario daoUsuario;
     private DAORol daoRol;
@@ -87,7 +92,7 @@ public class ControladorGestionUsuarios implements ActionListener {
     
 	private void guardarUsuario() {
 		if (vista == null) {
-			System.err.println("⚠️ Vista es nula en guardarUsuario");
+			logger.error("⚠️ Vista es nula en guardarUsuario");
 			return;
 		}
 
@@ -400,7 +405,7 @@ public class ControladorGestionUsuarios implements ActionListener {
     }
     private void cargarUsuariosDesdeBaseDatos() {
 		if (vista == null || vista.modeloTablaUsuarios == null) {
-			System.err.println("⚠️ Vista o modelo de tabla es nulo");
+			logger.error("⚠️ Vista o modelo de tabla es nulo");
 			return;
 		}
 
@@ -408,7 +413,7 @@ public class ControladorGestionUsuarios implements ActionListener {
 		List<Usuario> usuarios = daoUsuario.obtenerTodosUsuarios();
 
 		if (usuarios == null) {
-			System.err.println("⚠️ Lista de usuarios es nula");
+			logger.error("⚠️ Lista de usuarios es nula");
 			return;
 		}
 

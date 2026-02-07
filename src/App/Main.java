@@ -1,11 +1,12 @@
 // App/Main.java
 package App;
-
+import ch.qos.logback.classic.util.ContextInitializer;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import controller.ControladorInventario;
 import controller.ControladorGestionUsuarios;
 import Database.ConexionBaseDatos;
@@ -19,6 +20,12 @@ public class Main {
     private static VentanaPrincipal ventanaPrincipal;
     private static VentanaLogin ventanaLogin;
     private static InventarioDAO inventario;
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    
+    static {
+        // Forzar a Logback a usar archivo de configuración
+        System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, "logback.xml");
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -40,7 +47,7 @@ public class Main {
                 servicioAuth = new ServicioAutenticacion();
                 inventario = new InventarioDAO();
                 
-                System.out.println("Sistema inicializado con " + inventario.obtenerCantidadProductos() + " productos");
+                logger.info("Sistema inicializado con " + inventario.obtenerCantidadProductos() + " productos");
                 
                 mostrarVentanaLogin();
             }
@@ -61,14 +68,14 @@ public class Main {
         ventanaLogin.setLoginListener(new VentanaLogin.ListenerLogin() {
             @Override
             public void onLoginExitoso(String usuario, String rol) {
-                System.out.println("Login exitoso - Usuario: " + usuario + " | Rol: " + rol);
+               logger.error("Login exitoso - Usuario: " + usuario + " | Rol: " + rol);
                 ventanaLogin.setVisible(false);
                 mostrarVentanaPrincipal();
             }
 
             @Override
             public void onLoginFallido(String mensaje) {
-                System.err.println("Login fallido: " + mensaje);
+                logger.error("Login fallido: " + mensaje);
             }
         });
         ventanaLogin.setVisible(true);
@@ -96,10 +103,10 @@ public class Main {
         // Aplicar permisos según el rol
         if (permisos != null && !permisos.isEmpty()) {
             ventanaPrincipal.aplicarPermisos(permisos);
-            System.out.println("Permisos aplicados correctamente");
+            logger.info("Permisos aplicados correctamente");
         } else {
             ventanaPrincipal.habilitarTodasLasPestanas();
-            System.out.println("Advertencia: No se encontraron permisos específicos");
+            logger.info("Advertencia: No se encontraron permisos específicos");
         }
         
         ventanaPrincipal.setVisible(true);

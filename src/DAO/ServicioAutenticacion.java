@@ -5,6 +5,10 @@ import DAO.AccesoSistemaDAO;
 import model.AccesoSistema;
 import model.Rol;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import util.PasswordHasher;
 
 public class ServicioAutenticacion {
@@ -13,6 +17,7 @@ public class ServicioAutenticacion {
     private Usuario usuarioActual;
     private Rol rolActual;
     private AccesoSistemaDAO accesoDAO;
+    private static final Logger logger = LoggerFactory.getLogger(ServicioAutenticacion.class);
 
     public ServicioAutenticacion() {
         this.daoUsuario = new DAOUsuario();
@@ -24,11 +29,11 @@ public class ServicioAutenticacion {
     private void inicializarAdminPorDefecto() {
         Usuario admin = daoUsuario.buscarUsuarioPorNombre("admin");
         if (admin == null) {
-            System.out.println("Creando usuario administrador por defecto...");
+            logger.info("Creando usuario administrador por defecto...");
             
             Rol rolAdmin = daoRol.buscarRolPorNombre("Administrador");
             if (rolAdmin == null) {
-                System.out.println("Creando rol Administrador...");
+                logger.info("Creando rol Administrador...");
                 rolAdmin = new Rol("Administrador");
                 rolAdmin.agregarPermiso("puedeGestionarProductos");
                 rolAdmin.agregarPermiso("puedeVender");
@@ -42,25 +47,25 @@ public class ServicioAutenticacion {
             
             if (daoUsuario.crearUsuario(nuevoAdmin)) {
                 daoRol.actualizarContadorUsuarios("Administrador", 1);
-                System.out.println("Usuario administrador creado: admin / admin");
+                logger.info("Usuario administrador creado: admin / admin");
             } else {
-                System.err.println("Error al crear usuario administrador");
+                logger.error("Error al crear usuario administrador");
             }
         } else {
-            System.out.println("Usuario admin ya existe en el sistema");
+            logger.info("Usuario admin ya existe en el sistema");
             if (!PasswordHasher.isHashed(admin.getContrasena())) {
-                System.out.println("Migrando contraseña de admin...");
+                logger.info("Migrando contraseña de admin...");
                 daoUsuario.cambiarContrasena("admin", admin.getContrasena());
             }
         }
     }
 
     public boolean autenticar(String usuario, String contrasena) {
-    	System.out.println("Intentando autenticar usuario: " + usuario);
+    	logger.info("Intentando autenticar usuario: " + usuario);
         
         // Validar entrada
         if (usuario == null || contrasena == null) {
-            System.err.println("⚠️ Usuario o contraseña nulos");
+            logger.error("⚠️ Usuario o contraseña nulos");
             return false;
         }
         
@@ -72,7 +77,7 @@ public class ServicioAutenticacion {
                 "FALLIDO", 
                 "Usuario no existe en el sistema"
             ));
-            System.err.println("Usuario no encontrado: " + usuario);
+            logger.error("Usuario no encontrado: " + usuario);
             return false;
         }
         
@@ -80,7 +85,7 @@ public class ServicioAutenticacion {
         String rolUsuario = user.getRol();
         if (rolUsuario == null) {
             rolUsuario = "SIN_ROL";
-            System.err.println("⚠️ Usuario " + usuario + " no tiene rol asignado");
+            logger.error("⚠️ Usuario " + usuario + " no tiene rol asignado");
         }
         
         if (user.isBloqueado()) {
@@ -90,7 +95,7 @@ public class ServicioAutenticacion {
                 "FALLIDO", 
                 "Usuario bloqueado"
             ));
-            System.err.println("Usuario bloqueado: " + usuario);
+            logger.error("Usuario bloqueado: " + usuario);
             return false;
         }
         
@@ -108,13 +113,13 @@ public class ServicioAutenticacion {
                     "Acceso concedido al sistema"
                 ));
                 
-                System.out.println("Usuario autenticado correctamente: " + usuario);
-                System.out.println("Rol asignado: " + usuarioActual.getRol());
+                logger.info("Usuario autenticado correctamente: " + usuario);
+                logger.info("Rol asignado: " + usuarioActual.getRol());
                 
                 if (rolActual != null) {
-                    System.out.println("Permisos cargados: " + rolActual.getPermisos());
+                    logger.info("Permisos cargados: " + rolActual.getPermisos());
                 } else {
-                    System.err.println("Rol no encontrado, creando rol básico: " + usuarioActual.getRol());
+                    logger.error("Rol no encontrado, creando rol básico: " + usuarioActual.getRol());
                     crearRolBasico(usuarioActual.getRol());
                     this.rolActual = daoRol.buscarRolPorNombre(usuarioActual.getRol());
                 }
@@ -129,12 +134,12 @@ public class ServicioAutenticacion {
             ));
         }
         
-        System.err.println("Autenticación fallida para: " + usuario);
+        logger.error("Autenticación fallida para: " + usuario);
         return false;
     }
 
     private void crearRolBasico(String nombreRol) {
-        System.out.println("Creando rol básico: " + nombreRol);
+        logger.info("Creando rol básico: " + nombreRol);
         Rol rolBasico = new Rol(nombreRol);
         rolBasico.agregarPermiso("puedeGestionarProductos");
         rolBasico.agregarPermiso("puedeVender");
@@ -171,7 +176,7 @@ public class ServicioAutenticacion {
     }
 
     public void cerrarSesion() {
-        System.out.println("Cerrando sesión de: " + (usuarioActual != null ? usuarioActual.getUsuario() : "N/A"));
+        logger.info("Cerrando sesión de: " + (usuarioActual != null ? usuarioActual.getUsuario() : "N/A"));
         this.usuarioActual = null;
         this.rolActual = null;
     }
@@ -186,16 +191,16 @@ public class ServicioAutenticacion {
             long exitosos = accesoDAO.contarAccesosExitosos();
             long fallidos = accesoDAO.contarAccesosFallidos();
             
-            System.out.println("\n--- Estadísticas de Accesos ---");
-            System.out.println("Total de accesos: " + total);
-            System.out.println("Accesos exitosos: " + exitosos);
-            System.out.println("Accesos fallidos: " + fallidos);
+            logger.info("\n--- Estadísticas de Accesos ---");
+            logger.info("Total de accesos: " + total);
+            logger.info("Accesos exitosos: " + exitosos);
+            logger.info("Accesos fallidos: " + fallidos);
             if (total > 0) {
-                System.out.println("Tasa de éxito: " + String.format("%.2f%%", (exitosos * 100.0 / total)));
+                logger.info("Tasa de éxito: " + String.format("%.2f%%", (exitosos * 100.0 / total)));
             }
-            System.out.println("-------------------------------\n");
+            logger.info("-------------------------------\n");
         } catch (Exception e) {
-            System.err.println("Error al obtener estadísticas: " + e.getMessage());
+            logger.error("Error al obtener estadísticas: " + e.getMessage());
         }
     }
 }

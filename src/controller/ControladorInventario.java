@@ -17,6 +17,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
@@ -25,6 +29,7 @@ import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
 public class ControladorInventario implements ActionListener, ListSelectionListener, DocumentListener {
+	private static final Logger logger = LoggerFactory.getLogger(ControladorInventario.class);
     private VentanaPrincipal vista;
     private InventarioDAO modelo;
     private CarritoCompra carrito;
@@ -62,8 +67,8 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         
         this.vista.panelVentas.setCarrito(carrito);
         
-        System.out.println("ControladorInventario inicializado");
-        System.out.println("Productos en modelo: " + modelo.obtenerCantidadProductos());
+       logger.info("ControladorInventario inicializado");
+       logger.info("Productos en modelo: " + modelo.obtenerCantidadProductos());
         
         cargarProductosAlCombo();
         actualizarTablaProductos();
@@ -302,16 +307,16 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
     private void agregarProductoAlCarrito() {
     	if (vista == null || vista.panelVentas == null) {
-            System.err.println("⚠️ Componentes de ventas no inicializados");
+            logger.error("⚠️ Componentes de ventas no inicializados");
             return;
         }
         
         String codigoProducto = obtenerProductoSeleccionadoSeguro();
         String cantidadStr = obtenerCantidadSegura();
 
-        System.out.println("Intentando agregar al carrito:");
-        System.out.println("  Código seleccionado: " + codigoProducto);
-        System.out.println("  Cantidad: " + cantidadStr);
+        logger.info("Intentando agregar al carrito:");
+        logger.info("  Código seleccionado: " + codigoProducto);
+        logger.info("  Cantidad: " + cantidadStr);
 
         // Validación de producto seleccionado
         if (codigoProducto == null || codigoProducto.isEmpty()) {
@@ -384,13 +389,17 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
     
     private String obtenerProductoSeleccionadoSeguro() {
-        if (vista.panelVentas.cmbProductos == null) return "";
+        if (vista.panelVentas.cmbProductos == null) {
+        	return "";
+        }
         Object selected = vista.panelVentas.cmbProductos.getSelectedItem();
         return (selected != null) ? selected.toString() : "";
     }
 
     private String obtenerCantidadSegura() {
-        if (vista.panelVentas.txtCantidad == null) return "";
+        if (vista.panelVentas.txtCantidad == null) {
+        	return "";
+        }
         String texto = vista.panelVentas.txtCantidad.getText();
         return (texto != null) ? texto.trim() : "";
     }
@@ -522,7 +531,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
 
     private void actualizarCarritoEnVista() {
-        System.out.println("Actualizando carrito en vista...");
+        logger.info("Actualizando carrito en vista...");
         vista.panelVentas.actualizarCarritoEnTabla();
         vista.panelVentas.revalidate();
         vista.panelVentas.repaint();
@@ -544,7 +553,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
                 vista.panelReportes.txtReporte.setText("Error al generar el reporte.");
             }
         } catch (Exception e) {
-            System.err.println("Error al generar reporte: " + e.getMessage());
+            logger.error("Error al generar reporte: " + e.getMessage());
             if (vista.panelReportes.txtReporte != null) {
                 vista.panelReportes.txtReporte.setText("Error: " + e.getMessage());
             }
@@ -699,7 +708,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     	            usuarioActual = "Desconocido";
     	        }
     	    } catch (Exception e) {
-    	        System.err.println("Error obteniendo usuario actual: " + e.getMessage());
+    	        logger.error("Error obteniendo usuario actual: " + e.getMessage());
     	    }
     	    
     	    reporte.append("Generado por: ").append(usuarioActual).append("\n\n");
@@ -809,7 +818,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     
     private void mostrarReporteEnVista(StringBuilder reporte) {
     	if (vista == null || vista.panelReportes == null || vista.panelReportes.txtReporte == null) {
-            System.err.println("⚠️ Componentes de vista no disponibles para mostrar reporte");
+            logger.error("⚠️ Componentes de vista no disponibles para mostrar reporte");
             return;
         }
         
@@ -853,7 +862,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
 
     private void cargarProductosAlCombo() {
-        System.out.println("Cargando productos al ComboBox...");
+        logger.info("Cargando productos al ComboBox...");
         
         vista.panelVentas.cmbProductos.removeAllItems();
         
@@ -869,21 +878,21 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
                 if (producto.getStock() > 0) {
                     vista.panelVentas.cmbProductos.addItem(producto.getCodigo());
                     productosConStock++;
-                    System.out.println("  Agregado: " + producto.getCodigo() + " - " + producto.getNombre());
+                    logger.info("  Agregado: " + producto.getCodigo() + " - " + producto.getNombre());
                 }
             }
             
             System.out.println("Total productos con stock agregados: " + productosConStock);
             
             if (productosConStock == 0) {
-                System.out.println("Advertencia: No hay productos con stock disponible");
+                logger.info("Advertencia: No hay productos con stock disponible");
                 JOptionPane.showMessageDialog(vista, 
                     "No hay productos con stock disponible en la base de datos.\n" +
                     "Por favor agregue productos primero.", 
                     "Sin Stock", JOptionPane.WARNING_MESSAGE);
             }
         } else {
-            System.err.println("❌ Error: El modelo no es InventarioDAO");
+            logger.error("❌ Error: El modelo no es InventarioDAO");
         }
     }
 

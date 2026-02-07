@@ -5,10 +5,14 @@ import DAO.ProductoDAO;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class InventarioDAO {
     private List<Producto> productos;
     private List<Venta> ventas;
     private ProductoDAO productoDAO;
+    private static final Logger logger = LoggerFactory.getLogger(InventarioDAO.class);
     
     public InventarioDAO() {
         this.productos = new ArrayList<>();
@@ -20,14 +24,14 @@ public class InventarioDAO {
     private void cargarProductosDesdeBD() {
         try {
             this.productos = productoDAO.obtenerTodosProductos();
-            System.out.println("Productos cargados: " + productos.size());
+            logger.info("Productos cargados: " + productos.size());
             
             if (productos.isEmpty()) {
-                System.out.println("No hay productos en la BD, agregando datos de ejemplo");
+                logger.info("No hay productos en la BD, agregando datos de ejemplo");
                 inicializarDatosEjemplo();
             }
         } catch (Exception e) {
-            System.err.println("Error al cargar productos: " + e.getMessage());
+            logger.error("Error al cargar productos: " + e.getMessage());
             inicializarDatosEjemplo();
         }
     }

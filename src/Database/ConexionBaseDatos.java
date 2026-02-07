@@ -15,10 +15,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConexionBaseDatos {
     private static MongoClient clienteMongo;
     private static MongoDatabase baseDatos;
+    private static final Logger logger = LoggerFactory.getLogger(ConexionBaseDatos.class);
     
     private static final String NOMBRE_BASE_DATOS = "ferreteria_carlin";
     
@@ -30,7 +33,7 @@ public class ConexionBaseDatos {
             prop.load(input);
             return prop.getProperty("db.connection_string");
         } catch (IOException ex) {
-            System.err.println("Error: No se pudo encontrar el archivo 'config.properties'. Asegúrate de que esté en la raíz del proyecto.");
+            logger.error("Error: No se pudo encontrar el archivo 'config.properties'. Asegúrate de que esté en la raíz del proyecto.");
             ex.printStackTrace();
             return null;
         }
@@ -54,9 +57,9 @@ public class ConexionBaseDatos {
             }
             
             baseDatos.runCommand(new Document("ping", 1));
-            System.out.println("Conectado a la base de datos: " + NOMBRE_BASE_DATOS);
+            logger.info("Conectado a la base de datos: " + NOMBRE_BASE_DATOS);
         } catch (Exception e) {
-            System.err.println("Error al conectar a la base de datos: " + e.getMessage());
+            logger.error("Error al conectar a la base de datos: " + e.getMessage());
             throw new ConexionBaseDatosException("Error al conectar a MongoDB", e);
         }
     }
@@ -75,7 +78,7 @@ public class ConexionBaseDatos {
     public static void cerrar() {
         if (clienteMongo != null) {
             clienteMongo.close();
-            System.out.println("Conexión cerrada");
+            logger.info("Conexión cerrada");
         }
     }
 }
