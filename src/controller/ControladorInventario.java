@@ -493,91 +493,206 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
 
     private void generarReporte() {
-        String tipoReporte = (String) vista.panelReportes.cmbTipoReporte.getSelectedItem();
-        StringBuilder reporte = new StringBuilder();
-        
+        String tipoReporte = obtenerTipoReporteSeleccionado();
+        StringBuilder reporte = generarContenidoReporte(tipoReporte);
+        mostrarReporteEnVista(reporte);
+    }
+    
+    private String obtenerTipoReporteSeleccionado() {
+        return (String) vista.panelReportes.cmbTipoReporte.getSelectedItem();
+    }
+    
+    private StringBuilder generarContenidoReporte(String tipoReporte) {
         switch (tipoReporte) {
             case "Reporte de Ventas":
-                reporte.append("=== REPORTE DE VENTAS ===\n");
-                reporte.append("Fecha: ").append(LocalDate.now()).append("\n\n");
-                double totalVentas = 0;
-                for (Venta venta : modelo.obtenerTodasVentas()) {
-                    reporte.append(String.format("Producto: %s | Cant: %d | Total: $%.2f | Fecha: %s\n", 
-                        venta.getNombreProducto(), venta.getCantidad(), venta.getTotal(), venta.getFecha()));
-                    totalVentas += venta.getTotal();
-                }
-                reporte.append(String.format("\nTOTAL VENTAS: $%.2f", totalVentas));
-                break;
+                return generarReporteVentas();
                 
             case "Alerta de Stock Bajo":
-                reporte.append("=== ALERTA DE STOCK BAJO ===\n");
-                reporte.append("Fecha: ").append(LocalDate.now()).append("\n\n");
-                boolean tieneStockBajo = false;
-                for (Producto producto : modelo.obtenerTodosProductos()) {
-                    if (producto.getStock() <= producto.getStockMinimo()) {
-                        reporte.append(String.format("Producto: %s | Stock Actual: %d | Mínimo: %d\n", 
-                            producto.getNombre(), producto.getStock(), producto.getStockMinimo()));
-                        tieneStockBajo = true;
-                    }
-                }
-                if (!tieneStockBajo) {
-                    reporte.append("No hay productos con stock bajo.");
-                }
-                break;
+                return generarReporteStockBajo();
                 
             case "Catálogo de Productos":
-                reporte.append("=== CATÁLOGO DE PRODUCTOS ===\n");
-                reporte.append("Fecha: ").append(LocalDate.now()).append("\n\n");
-                for (Producto producto : modelo.obtenerTodosProductos()) {
-                    reporte.append(String.format("Código: %s | Nombre: %s | Stock: %d | Precio: $%.2f\n", 
-                        producto.getCodigo(), producto.getNombre(), producto.getStock(), producto.getPrecio()));
-                }
-                break;
+                return generarReporteCatalogo();
                 
-            // NUEVO CASO: HISTORIAL DE ACCESOS
             case "Historial de Accesos":
-                reporte.append("=== HISTORIAL DE ACCESOS AL SISTEMA ===\n");
-                reporte.append("Fecha del reporte: ").append(LocalDate.now()).append("\n");
-                reporte.append("Generado por: ").append(App.Main.getServicioAutenticacion().getUsuarioActual()).append("\n\n");
+                return generarReporteHistorialAccesos();
                 
-                List<AccesoSistema> accesos = accesoDAO.obtenerTodosAccesos();
-                
-                // Estadísticas
-                long totalAccesos = accesoDAO.contarAccesosTotales();
-                long exitosos = accesoDAO.contarAccesosExitosos();
-                long fallidos = accesoDAO.contarAccesosFallidos();
-                
-                reporte.append("📊 ESTADÍSTICAS GENERALES:\n");
-                reporte.append(String.format("• Total de intentos de acceso: %d\n", totalAccesos));
-                reporte.append(String.format("• Accesos exitosos: %d\n", exitosos));
-                reporte.append(String.format("• Accesos fallidos: %d\n", fallidos));
-                reporte.append(String.format("• Tasa de éxito: %.2f%%\n\n", 
-                    totalAccesos > 0 ? (exitosos * 100.0 / totalAccesos) : 0));
-                
-                reporte.append("📋 DETALLE DE ACCESOS (más recientes primero):\n");
-                reporte.append("----------------------------------------------------------------------------------------\n");
-                
-                int contador = 0;
-                for (AccesoSistema acceso : accesos) {
-                    contador++;
-                    String icono = acceso.getTipoAcceso().equals("EXITOSO") ? "✅" : "❌";
-                    reporte.append(String.format("%s %d. [%s] Usuario: %-15s | Rol: %-15s\n", 
-                        icono, contador, acceso.getFechaHora(), acceso.getUsuario(), acceso.getRol()));
-                    reporte.append(String.format("   Mensaje: %s\n", acceso.getMensaje()));
-                    
-                    // Mostrar solo los últimos 50 accesos para no saturar el reporte
-                    if (contador >= 50) {
-                        reporte.append("\n⚠️ Mostrando solo los 50 accesos más recientes\n");
-                        break;
-                    }
-                }
-                
-                if (accesos.isEmpty()) {
-                    reporte.append("No hay registros de acceso en el sistema.\n");
-                }
-                break;
+            default:
+                return generarReporteNoEncontrado(tipoReporte);
+        }
+    }
+    
+    private StringBuilder generarReporteVentas() {
+        StringBuilder reporte = new StringBuilder();
+        reporte.append("=== REPORTE DE VENTAS ===\n");
+        reporte.append("Fecha: ").append(LocalDate.now()).append("\n\n");
+        
+        double totalVentas = agregarDetalleVentas(reporte);
+        agregarTotalVentas(reporte, totalVentas);
+        
+        return reporte;
+    }
+    
+    private double agregarDetalleVentas(StringBuilder reporte) {
+        double totalVentas = 0;
+        for (Venta venta : modelo.obtenerTodasVentas()) {
+            String detalleVenta = String.format(
+                "Producto: %s | Cant: %d | Total: $%.2f | Fecha: %s\n",
+                venta.getNombreProducto(), venta.getCantidad(), 
+                venta.getTotal(), venta.getFecha()
+            );
+            reporte.append(detalleVenta);
+            totalVentas += venta.getTotal();
+        }
+        return totalVentas;
+    }
+
+    private void agregarTotalVentas(StringBuilder reporte, double totalVentas) {
+        reporte.append(String.format("\nTOTAL VENTAS: $%.2f", totalVentas));
+    }
+    
+    private StringBuilder generarReporteStockBajo() {
+        StringBuilder reporte = new StringBuilder();
+        reporte.append("=== ALERTA DE STOCK BAJO ===\n");
+        reporte.append("Fecha: ").append(LocalDate.now()).append("\n\n");
+        
+        boolean tieneStockBajo = agregarProductosStockBajo(reporte);
+        
+        if (!tieneStockBajo) {
+            reporte.append("No hay productos con stock bajo.");
         }
         
+        return reporte;
+    }
+    
+    private boolean agregarProductosStockBajo(StringBuilder reporte) {
+        boolean tieneStockBajo = false;
+        for (Producto producto : modelo.obtenerTodosProductos()) {
+            if (esStockBajo(producto)) {
+                String detalleProducto = String.format(
+                    "Producto: %s | Stock Actual: %d | Mínimo: %d\n",
+                    producto.getNombre(), producto.getStock(), producto.getStockMinimo()
+                );
+                reporte.append(detalleProducto);
+                tieneStockBajo = true;
+            }
+        }
+        return tieneStockBajo;
+    }
+    
+    private boolean esStockBajo(Producto producto) {
+        return producto.getStock() <= producto.getStockMinimo();
+    }
+
+    private StringBuilder generarReporteCatalogo() {
+        StringBuilder reporte = new StringBuilder();
+        reporte.append("=== CATÁLOGO DE PRODUCTOS ===\n");
+        reporte.append("Fecha: ").append(LocalDate.now()).append("\n\n");
+        
+        agregarProductosAlCatalogo(reporte);
+        
+        return reporte;
+    }
+    
+    private void agregarProductosAlCatalogo(StringBuilder reporte) {
+        for (Producto producto : modelo.obtenerTodosProductos()) {
+            String detalleProducto = String.format(
+                "Código: %s | Nombre: %s | Stock: %d | Precio: $%.2f\n",
+                producto.getCodigo(), producto.getNombre(), 
+                producto.getStock(), producto.getPrecio()
+            );
+            reporte.append(detalleProducto);
+        }
+    }
+    
+    private StringBuilder generarReporteHistorialAccesos() {
+        StringBuilder reporte = new StringBuilder();
+        
+        agregarEncabezadoHistorialAccesos(reporte);
+        agregarEstadisticasAccesos(reporte);
+        agregarDetalleAccesos(reporte);
+        
+        return reporte;
+    }
+    
+    private void agregarEncabezadoHistorialAccesos(StringBuilder reporte) {
+        reporte.append("=== HISTORIAL DE ACCESOS AL SISTEMA ===\n");
+        reporte.append("Fecha del reporte: ").append(LocalDate.now()).append("\n");
+        reporte.append("Generado por: ")
+               .append(App.Main.getServicioAutenticacion().getUsuarioActual())
+               .append("\n\n");
+    }
+    
+    private void agregarEstadisticasAccesos(StringBuilder reporte) {
+        long totalAccesos = accesoDAO.contarAccesosTotales();
+        long exitosos = accesoDAO.contarAccesosExitosos();
+        long fallidos = accesoDAO.contarAccesosFallidos();
+        double tasaExito = calcularTasaExito(totalAccesos, exitosos);
+        
+        reporte.append("📊 ESTADÍSTICAS GENERALES:\n");
+        reporte.append(String.format("• Total de intentos de acceso: %d\n", totalAccesos));
+        reporte.append(String.format("• Accesos exitosos: %d\n", exitosos));
+        reporte.append(String.format("• Accesos fallidos: %d\n", fallidos));
+        reporte.append(String.format("• Tasa de éxito: %.2f%%\n\n", tasaExito));
+    }
+    
+    private double calcularTasaExito(long totalAccesos, long exitosos) {
+        return totalAccesos > 0 ? (exitosos * 100.0 / totalAccesos) : 0;
+    }
+
+    private void agregarDetalleAccesos(StringBuilder reporte) {
+        List<AccesoSistema> accesos = accesoDAO.obtenerTodosAccesos();
+        
+        reporte.append("📋 DETALLE DE ACCESOS (más recientes primero):\n");
+        reporte.append("----------------------------------------------------------------------------------------\n");
+        
+        if (accesos.isEmpty()) {
+            reporte.append("No hay registros de acceso en el sistema.\n");
+            return;
+        }
+        
+        int contador = 0;
+        for (AccesoSistema acceso : accesos) {
+            contador++;
+            agregarDetalleAcceso(reporte, acceso, contador);
+            
+            if (contador >= 50) {
+                reporte.append("\n⚠️ Mostrando solo los 50 accesos más recientes\n");
+                break;
+            }
+        }
+    }
+
+    private void agregarDetalleAcceso(StringBuilder reporte, AccesoSistema acceso, int numero) {
+        String icono = obtenerIconoAcceso(acceso.getTipoAcceso());
+        
+        String cabeceraAcceso = String.format(
+            "%s %d. [%s] Usuario: %-15s | Rol: %-15s\n",
+            icono, numero, acceso.getFechaHora(), 
+            acceso.getUsuario(), acceso.getRol()
+        );
+        reporte.append(cabeceraAcceso);
+        
+        String mensajeAcceso = String.format("   Mensaje: %s\n", acceso.getMensaje());
+        reporte.append(mensajeAcceso);
+    }
+
+    private String obtenerIconoAcceso(String tipoAcceso) {
+        return tipoAcceso.equals("EXITOSO") ? "✅" : "❌";
+    }
+    
+    private StringBuilder generarReporteNoEncontrado(String tipoReporte) {
+        StringBuilder reporte = new StringBuilder();
+        reporte.append("=== TIPO DE REPORTE NO ENCONTRADO ===\n");
+        reporte.append("El tipo de reporte '").append(tipoReporte).append("' no está disponible.\n");
+        reporte.append("Tipos disponibles:\n");
+        reporte.append("- Reporte de Ventas\n");
+        reporte.append("- Alerta de Stock Bajo\n");
+        reporte.append("- Catálogo de Productos\n");
+        reporte.append("- Historial de Accesos\n");
+        return reporte;
+    }
+    
+    private void mostrarReporteEnVista(StringBuilder reporte) {
         vista.panelReportes.txtReporte.setText(reporte.toString());
     }
 
