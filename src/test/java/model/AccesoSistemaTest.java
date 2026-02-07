@@ -78,11 +78,11 @@ class AccesoSistemaTest {
 
     @Test 
     void testFechaHoraAutoGenerada() {
-        String antesCreacion = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        String antesCreacion = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         
         AccesoSistema acceso = new AccesoSistema("user", "User", "EXITOSO", "OK");
         
-        String despuesCreacion = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        String despuesCreacion = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         
         assertTrue(acceso.getFechaHora().compareTo(antesCreacion) >= 0);
         assertTrue(acceso.getFechaHora().compareTo(despuesCreacion) <= 0);

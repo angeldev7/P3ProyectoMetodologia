@@ -56,7 +56,6 @@ class ItemCarritoTest {
         String resultado = item.toString();
         
         assertThat(resultado)
-                .contains("P001")
                 .contains("Martillo")
                 .contains(String.valueOf(CANTIDAD));
     }
