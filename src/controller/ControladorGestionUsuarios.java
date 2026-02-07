@@ -65,27 +65,55 @@ public class ControladorGestionUsuarios implements ActionListener {
     
     @Override
     public void actionPerformed(ActionEvent e) {
-    	
         Object fuente = e.getSource();
+        
+        if (esBotonUsuario(fuente)) {
+            procesarBotonUsuario(fuente);
+        } else if (esBotonRol(fuente)) {
+            procesarBotonRol(fuente);
+        }
+    }
+
+    private boolean esBotonUsuario(Object fuente) {
+        return fuente == vista.btnGuardarUsuario ||
+               fuente == vista.btnNuevoUsuario ||
+               fuente == vista.btnBloquearUsuario ||
+               fuente == vista.btnDesbloquearUsuario ||
+               fuente == vista.btnEliminarUsuario ||
+               fuente == vista.btnResetearContrasena;
+    }
+
+    private boolean esBotonRol(Object fuente) {
+        return fuente == vista.btnGuardarRol ||
+               fuente == vista.btnNuevoRol ||
+               fuente == vista.btnEditarRol ||
+               fuente == vista.btnEliminarRol;
+    }
+
+    private void procesarBotonUsuario(Object fuente) {
         if (fuente == vista.btnGuardarUsuario) {
             guardarUsuario();
         } else if (fuente == vista.btnNuevoUsuario) {
             limpiarFormularioUsuario();
-        } else if (fuente == vista.btnBloquearUsuario) { // NUEVO
+        } else if (fuente == vista.btnBloquearUsuario) {
             bloquearUsuario();
-        } else if (fuente == vista.btnDesbloquearUsuario) { // NUEVO
+        } else if (fuente == vista.btnDesbloquearUsuario) {
             desbloquearUsuario();
         } else if (fuente == vista.btnEliminarUsuario) {
             eliminarUsuario();
         } else if (fuente == vista.btnResetearContrasena) {
             resetearContrasena();
-        } else if (fuente == vista.btnGuardarRol) {
+        }
+    }
+
+    private void procesarBotonRol(Object fuente) {
+        if (fuente == vista.btnGuardarRol) {
             guardarRol();
         } else if (fuente == vista.btnNuevoRol) {
             limpiarFormularioRol();
-        } else if (fuente == vista.btnEditarRol) { // NUEVO
+        } else if (fuente == vista.btnEditarRol) {
             editarRol();
-        } else if (fuente == vista.btnEliminarRol) { // NUEVO
+        } else if (fuente == vista.btnEliminarRol) {
             eliminarRol();
         }
     }

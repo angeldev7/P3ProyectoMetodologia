@@ -79,19 +79,61 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     @Override
     public void actionPerformed(ActionEvent e) {
         Object fuente = e.getSource();
+        procesarAccionPorPanel(fuente);
+    }
+
+    private void procesarAccionPorPanel(Object fuente) {
+        if (fuente == null) return;
+        
+        if (esBotonDeProductos(fuente)) {
+            procesarBotonProductos(fuente);
+        } else if (esBotonDeVentas(fuente)) {
+            procesarBotonVentas(fuente);
+        } else if (esBotonDeReportes(fuente)) {
+            procesarBotonReportes(fuente);
+        } else {
+            logger.warn("Botón no reconocido: {}", fuente);
+        }
+    }
+
+    private boolean esBotonDeProductos(Object fuente) {
+        return fuente == vista.panelProductos.btnGuardarProducto ||
+               fuente == vista.panelProductos.btnNuevoProducto ||
+               fuente == vista.panelProductos.btnEliminarProducto;
+    }
+
+    private boolean esBotonDeVentas(Object fuente) {
+        return fuente == vista.panelVentas.btnAgregarAlCarrito ||
+               fuente == vista.panelVentas.btnEliminarDelCarrito ||
+               fuente == vista.panelVentas.btnProcesarVenta;
+    }
+
+    private boolean esBotonDeReportes(Object fuente) {
+        return fuente == vista.panelReportes.btnGenerarReporte;
+    }
+
+    private void procesarBotonProductos(Object fuente) {
         if (fuente == vista.panelProductos.btnGuardarProducto) {
             guardarProducto();
         } else if (fuente == vista.panelProductos.btnNuevoProducto) {
             limpiarFormularioProducto();
         } else if (fuente == vista.panelProductos.btnEliminarProducto) {
             eliminarProducto();
-        } else if (fuente == vista.panelVentas.btnAgregarAlCarrito) {
+        }
+    }
+
+    private void procesarBotonVentas(Object fuente) {
+        if (fuente == vista.panelVentas.btnAgregarAlCarrito) {
             agregarProductoAlCarrito();
         } else if (fuente == vista.panelVentas.btnEliminarDelCarrito) {
             eliminarProductoDelCarrito();
         } else if (fuente == vista.panelVentas.btnProcesarVenta) {
             procesarVentaCarrito();
-        } else if (fuente == vista.panelReportes.btnGenerarReporte) {
+        }
+    }
+
+    private void procesarBotonReportes(Object fuente) {
+        if (fuente == vista.panelReportes.btnGenerarReporte) {
             generarReporte();
         }
     }
