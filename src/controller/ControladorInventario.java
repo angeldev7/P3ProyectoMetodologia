@@ -3,6 +3,7 @@ package controller;
 
 import model.Inventario;
 import DAO.AccesoSistemaDAO;
+import exception.ValidacionException;
 import model.AccesoSistema;
 import model.InventarioDAO;
 import model.Producto;
@@ -105,71 +106,147 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     public void changedUpdate(DocumentEvent e) {
         filtrarProductos();
     }
-
+    
     private void guardarProducto() {
-    	String codigo = vista.panelProductos.txtCodigo.getText().trim();
-        String nombre = vista.panelProductos.txtNombre.getText().trim();
-        String descripcion = vista.panelProductos.txtDescripcion.getText().trim();
-        String stockStr = vista.panelProductos.txtStock.getText().trim();
-        String precioStr = vista.panelProductos.txtPrecio.getText().trim(); 
-        String stockMinimoStr = vista.panelProductos.txtStockMinimo.getText().trim();
+    	 try {
+    	        // 1. Obtener datos del formulario
+    	        DatosProducto datos = obtenerDatosDelFormulario();
+    	        
+    	        // 2. Validar datos básicos
+    	        validarDatosBasicos(datos);
+    	        
+    	        // 3. Validar formato numérico
+    	        validarFormatosNumericos(datos);
+    	        
+    	        // 4. Convertir datos numéricos
+    	        Producto producto = convertirDatosAProducto(datos);
+    	        
+    	        // 5. Validar valores numéricos
+    	        validarValoresNumericos(producto);
+    	        
+    	        // 6. Verificar existencia del producto
+    	        Producto productoExistente = modelo.buscarProductoPorCodigo(datos.codigo);
+    	        
+    	        // 7. Guardar o actualizar producto
+    	        if (esActualizacion(productoExistente)) {
+    	            actualizarProductoExistente(productoExistente, producto);
+    	        } else {
+    	            crearNuevoProducto(producto, datos.codigo);
+    	        }
+    	        
+    	        // 8. Actualizar interfaz
+    	        actualizarInterfazDespuesDeGuardar();
+    	        
+    	    } catch (ValidacionException e) {
+    	        // Mostrar mensaje de error al usuario
+    	        JOptionPane.showMessageDialog(vista, e.getMessage(), "Error de Validación", JOptionPane.ERROR_MESSAGE);
+    	    } catch (NumberFormatException e) {
+    	        JOptionPane.showMessageDialog(vista, "Por favor ingrese valores numéricos válidos.", "Formato Inválido", JOptionPane.ERROR_MESSAGE);
+    	    }
+    }
+    
+    private static class DatosProducto{
+    	String codigo, nombre, descripcion, stockStr, precioStr, stockMinimoStr;
 
-        // Validación de campos vacíos
-        if (codigo.isEmpty() || nombre.isEmpty() || stockStr.isEmpty() || precioStr.isEmpty() || stockMinimoStr.isEmpty()) {
-            JOptionPane.showMessageDialog(vista, "Por favor complete todos los campos requeridos.", "Campos Incompletos", JOptionPane.WARNING_MESSAGE);
-            return;
+		public DatosProducto(String codigo, String nombre, String descripcion, String stockStr, String precioStr,
+				String stockMinimoStr) {
+			super();
+			this.codigo = codigo;
+			this.nombre = nombre;
+			this.descripcion = descripcion;
+			this.stockStr = stockStr;
+			this.precioStr = precioStr;
+			this.stockMinimoStr = stockMinimoStr;
+		}
+    }
+    
+    private DatosProducto obtenerDatosDelFormulario() {
+    	return new DatosProducto(
+    	        vista.panelProductos.txtCodigo.getText().trim(),
+    	        vista.panelProductos.txtNombre.getText().trim(),
+    	        vista.panelProductos.txtDescripcion.getText().trim(),
+    	        vista.panelProductos.txtStock.getText().trim(),
+    	        vista.panelProductos.txtPrecio.getText().trim(),
+    	        vista.panelProductos.txtStockMinimo.getText().trim()
+    	    );
+    }
+    
+    private void validarDatosBasicos(DatosProducto datos) {
+        if (datos.codigo.isEmpty() || datos.nombre.isEmpty() || 
+            datos.stockStr.isEmpty() || datos.precioStr.isEmpty() || 
+            datos.stockMinimoStr.isEmpty()) {
+            throw new ValidacionException("Por favor complete todos los campos requeridos.");
         }
-
+    }
+    
+    private void validarFormatosNumericos(DatosProducto datos) {
         // Limpiar el símbolo de dólar si está presente
-        String precioLimpioStr = precioStr.startsWith("$") ? precioStr.substring(1) : precioStr;
+        String precioLimpioStr = datos.precioStr.startsWith("$") ? 
+                                datos.precioStr.substring(1) : datos.precioStr;
         
-        // Validación de formato numérico para el precio
         if (!Pattern.matches("^\\d+(\\.\\d+)?$", precioLimpioStr)) {
-            JOptionPane.showMessageDialog(vista, "Por favor ingrese un valor numérico válido para el precio (ej: 10.50 o $10.50).", "Formato de Precio Inválido", JOptionPane.ERROR_MESSAGE);
-            return;
+            throw new ValidacionException("Por favor ingrese un valor numérico válido para el precio (ej: 10.50 o $10.50).");
         }
-
+    }
+    
+    private Producto convertirDatosAProducto(DatosProducto datos) {
         try {
-            int stock = Integer.parseInt(stockStr);
-            double precio = Double.parseDouble(precioLimpioStr); 
-            int stockMinimo = Integer.parseInt(stockMinimoStr);
-
-            if (stock < 0 || precio < 0 || stockMinimo < 0) {
-                JOptionPane.showMessageDialog(vista, "El stock, precio y stock mínimo deben ser valores positivos.", "Valores Inválidos", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            Producto productoExistente = modelo.buscarProductoPorCodigo(codigo);
+            String precioLimpioStr = datos.precioStr.startsWith("$") ? 
+                                    datos.precioStr.substring(1) : datos.precioStr;
             
-            if (productoExistente != null && vista.panelProductos.txtCodigo.isEditable()) {
-                JOptionPane.showMessageDialog(vista, "Ya existe un producto con ese código.", "Código Duplicado", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            int stock = Integer.parseInt(datos.stockStr);
+            double precio = Double.parseDouble(precioLimpioStr);
+            int stockMinimo = Integer.parseInt(datos.stockMinimoStr);
             
-            if (productoExistente != null && !vista.panelProductos.txtCodigo.isEditable()) {
-                // Actualizar producto existente - MongoDB se actualiza automáticamente
-                productoExistente.setNombre(nombre);
-                productoExistente.setDescripcion(descripcion);
-                productoExistente.setStock(stock);
-                productoExistente.setPrecio(precio);
-                productoExistente.setStockMinimo(stockMinimo);
-                
-                // Nota: El InventarioDAO ya actualiza MongoDB automáticamente
-                JOptionPane.showMessageDialog(vista, "Producto actualizado exitosamente.", "Actualización Exitosa", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                // Crear nuevo producto - MongoDB se guarda automáticamente
-                Producto nuevoProducto = new Producto(codigo, nombre, descripcion, stock, precio, stockMinimo);
-                modelo.agregarProducto(nuevoProducto);
-                JOptionPane.showMessageDialog(vista, "Producto guardado exitosamente en la base de datos.", "Guardado Exitoso", JOptionPane.INFORMATION_MESSAGE);
-            }
+            return new Producto(datos.codigo, datos.nombre, datos.descripcion, 
+                               stock, precio, stockMinimo);
             
-            actualizarTablaProductos();
-            cargarProductosAlCombo();
-            limpiarFormularioProducto();
-            
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(vista, "Por favor ingrese valores numéricos válidos.", "Formato Inválido", JOptionPane.ERROR_MESSAGE);
+        } catch (NumberFormatException e) {
+            throw new ValidacionException("Por favor ingrese valores numéricos válidos.");
         }
+    }
+    
+    private void validarValoresNumericos(Producto producto) {
+        if (producto.getStock() < 0 || producto.getPrecio() < 0 || 
+            producto.getStockMinimo() < 0) {
+            throw new ValidacionException("El stock, precio y stock mínimo deben ser valores positivos.");
+        }
+    }
+    
+    private boolean esActualizacion(Producto productoExistente) {
+        return productoExistente != null && !vista.panelProductos.txtCodigo.isEditable();
+    }
+    
+    private void crearNuevoProducto(Producto producto, String codigo) {
+        Producto productoExistente = modelo.buscarProductoPorCodigo(codigo);
+        
+        if (productoExistente != null && vista.panelProductos.txtCodigo.isEditable()) {
+            throw new ValidacionException("Ya existe un producto con ese código.");
+        }
+        
+        modelo.agregarProducto(producto);
+        JOptionPane.showMessageDialog(vista, 
+            "Producto guardado exitosamente en la base de datos.", 
+            "Guardado Exitoso", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void actualizarProductoExistente(Producto productoExistente, Producto nuevosDatos) {
+        productoExistente.setNombre(nuevosDatos.getNombre());
+        productoExistente.setDescripcion(nuevosDatos.getDescripcion());
+        productoExistente.setStock(nuevosDatos.getStock());
+        productoExistente.setPrecio(nuevosDatos.getPrecio());
+        productoExistente.setStockMinimo(nuevosDatos.getStockMinimo());
+        
+        // Nota: El InventarioDAO ya actualiza MongoDB automáticamente
+        JOptionPane.showMessageDialog(vista, 
+            "Producto actualizado exitosamente.", 
+            "Actualización Exitosa", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void actualizarInterfazDespuesDeGuardar() {
+        actualizarTablaProductos();
+        cargarProductosAlCombo();
+        limpiarFormularioProducto();
     }
 
     private void eliminarProducto() {

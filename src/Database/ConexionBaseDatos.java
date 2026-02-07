@@ -4,6 +4,9 @@ package Database;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+
+import exception.ConexionBaseDatosException;
+
 import com.mongodb.client.MongoCollection;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;

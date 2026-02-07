@@ -1,4 +1,4 @@
-package Database;
+package exception;
 
 public class ConexionBaseDatosException extends RuntimeException {
     public ConexionBaseDatosException(String message) {
