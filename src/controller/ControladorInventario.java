@@ -645,31 +645,47 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
     
     private double agregarDetalleVentas(StringBuilder reporte) {
-    	if (reporte == null || modelo == null) return 0;
-        
-        Venta[] ventas = modelo.obtenerTodasVentas();
-        if (ventas == null) {
-            reporte.append("No hay datos de ventas disponibles.\n");
-            return 0;
-        }
-        
-        double totalVentas = 0;
-        for (Venta venta : ventas) {
-            if (venta == null) continue;
-            
-            String nombre = venta.getNombreProducto() != null ? venta.getNombreProducto() : "Producto desconocido";
-            int cantidad = venta.getCantidad();
-            double total = venta.getTotal();
-            String fecha = venta.getFecha() != null ? venta.getFecha() : "Fecha desconocida";
-            
-            String detalleVenta = String.format(
-                "Producto: %s | Cant: %d | Total: $%.2f | Fecha: %s\n",
-                nombre, cantidad, total, fecha
-            );
-            reporte.append(detalleVenta);
-            totalVentas += total;
-        }
-        return totalVentas;
+    	 if (reporte == null || modelo == null) {
+    		 return 0;
+    	 }
+    	    
+    	    Venta[] ventas = modelo.obtenerTodasVentas();
+    	    if (ventas == null) {
+    	        reporte.append("No hay datos de ventas disponibles.\n");
+    	        return 0;
+    	    }
+    	    
+    	    double totalVentas = 0;
+    	    
+    	    // Crear StringBuilder reutilizable para formato
+    	    StringBuilder linea = new StringBuilder();
+    	    
+    	    for (Venta venta : ventas) {
+    	        if (venta == null) {
+    	        	continue;
+    	        }
+    	        
+    	        String nombre = venta.getNombreProducto() != null ? venta.getNombreProducto() : "Producto desconocido";
+    	        int cantidad = venta.getCantidad();
+    	        double total = venta.getTotal();
+    	        String fecha = venta.getFecha() != null ? venta.getFecha() : "Fecha desconocida";
+    	        
+    	        // Reutilizar el mismo StringBuilder
+    	        linea.setLength(0); // Limpiar contenido anterior
+    	        linea.append("Producto: ")
+    	              .append(nombre)
+    	              .append(" | Cant: ")
+    	              .append(cantidad)
+    	              .append(" | Total: $")
+    	              .append(String.format("%.2f", total))
+    	              .append(" | Fecha: ")
+    	              .append(fecha)
+    	              .append("\n");
+    	        
+    	        reporte.append(linea);
+    	        totalVentas += total;
+    	    }
+    	    return totalVentas;
     }
 
     private void agregarTotalVentas(StringBuilder reporte, double totalVentas) {
@@ -876,32 +892,38 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     }
 
     private void actualizarTablaProductos() {
-        vista.panelProductos.modeloTabla.setRowCount(0);
+    	vista.panelProductos.modeloTabla.setRowCount(0);
+        
+        // Crear array reutilizable FUERA del loop
+        Object[] datosFila = new Object[7];
+        
         for (Producto producto : modelo.obtenerTodosProductos()) {
-            Object[] datosFila = {
-                producto.getCodigo(),
-                producto.getNombre(),
-                producto.getDescripcion(),
-                producto.getStock(),
-                String.format("$%.2f", producto.getPrecio()),
-                producto.getStockMinimo(),
-                producto.getStock() <= producto.getStockMinimo() ? "STOCK BAJO" : "OK"
-            };
+            datosFila[0] = producto.getCodigo();
+            datosFila[1] = producto.getNombre();
+            datosFila[2] = producto.getDescripcion();
+            datosFila[3] = producto.getStock();
+            datosFila[4] = String.format("$%.2f", producto.getPrecio());
+            datosFila[5] = producto.getStockMinimo();
+            datosFila[6] = producto.getStock() <= producto.getStockMinimo() ? "STOCK BAJO" : "OK";
+            
             vista.panelProductos.modeloTabla.addRow(datosFila);
         }
     }
 
     private void actualizarTablaVentas() {
-        vista.panelVentas.modeloTabla.setRowCount(0);
+    	vista.panelVentas.modeloTabla.setRowCount(0);
+        
+        // Crear array reutilizable FUERA del loop
+        Object[] datosFila = new Object[6];
+        
         for (Venta venta : modelo.obtenerTodasVentas()) {
-            Object[] datosFila = {
-                venta.getCodigoProducto(),
-                venta.getNombreProducto(),
-                venta.getCantidad(),
-                String.format("$%.2f", venta.getPrecioUnitario()),
-                String.format("$%.2f", venta.getTotal()),
-                venta.getFecha()
-            };
+            datosFila[0] = venta.getCodigoProducto();
+            datosFila[1] = venta.getNombreProducto();
+            datosFila[2] = venta.getCantidad();
+            datosFila[3] = String.format("$%.2f", venta.getPrecioUnitario());
+            datosFila[4] = String.format("$%.2f", venta.getTotal());
+            datosFila[5] = venta.getFecha();
+            
             vista.panelVentas.modeloTabla.addRow(datosFila);
         }
     }

@@ -433,48 +433,54 @@ public class ControladorGestionUsuarios implements ActionListener {
             }
         }
     }
+    
     private void cargarUsuariosDesdeBaseDatos() {
-		if (vista == null || vista.modeloTablaUsuarios == null) {
-			logger.error("⚠️ Vista o modelo de tabla es nulo");
-			return;
-		}
+        if (vista == null || vista.modeloTablaUsuarios == null) {
+            logger.error("⚠️ Vista o modelo de tabla es nulo");
+            return;
+        }
 
-		vista.modeloTablaUsuarios.setRowCount(0);
-		List<Usuario> usuarios = daoUsuario.obtenerTodosUsuarios();
+        vista.modeloTablaUsuarios.setRowCount(0);
+        List<Usuario> usuarios = daoUsuario.obtenerTodosUsuarios();
 
-		if (usuarios == null) {
-			logger.error("⚠️ Lista de usuarios es nula");
-			return;
-		}
+        if (usuarios == null) {
+            logger.error("⚠️ Lista de usuarios es nula");
+            return;
+        }
+        
+        // Crear array reutilizable fuera del loop
+        Object[] datosFila = new Object[6];
 
-		for (Usuario usuario : usuarios) {
-			if (usuario == null) {
-				continue; // Saltar usuarios nulos
-			}
-
-			String estadoMostrar;
-			if (usuario.isBloqueado()) {
-				estadoMostrar = "🚫 BLOQUEADO";
-				String fechaBloqueo = usuario.getFechaBloqueo();
-				if (fechaBloqueo != null && !fechaBloqueo.isEmpty()) {
-					estadoMostrar += " (" + fechaBloqueo + ")";
-				}
-			} else {
-				String estado = usuario.getEstado();
-				estadoMostrar = (estado != null) ? estado : "Activo";
-			}
+        for (Usuario usuario : usuarios) {
+            if (usuario == null) {
+                continue;
+            }
             
-            Object[] datosFila = {
-                usuario.getUsuario(),
-                usuario.getNombreCompleto(),
-                usuario.getRol(),
-                usuario.getFechaCreacion(),
-                estadoMostrar,
-                usuario.isBloqueado() ? "🚫 Sí" : "✅ No"
-            };
+            // Calcular estadoMostrar para cada usuario
+            String estadoMostrar;
+            if (usuario.isBloqueado()) {
+                estadoMostrar = "🚫 BLOQUEADO";
+                String fechaBloqueo = usuario.getFechaBloqueo();
+                if (fechaBloqueo != null && !fechaBloqueo.isEmpty()) {
+                    estadoMostrar += " (" + fechaBloqueo + ")";
+                }
+            } else {
+                String estado = usuario.getEstado();
+                estadoMostrar = (estado != null) ? estado : "Activo";
+            }
+            
+            // Rellenar array reutilizable
+            datosFila[0] = usuario.getUsuario();
+            datosFila[1] = usuario.getNombreCompleto();
+            datosFila[2] = usuario.getRol();
+            datosFila[3] = usuario.getFechaCreacion();
+            datosFila[4] = estadoMostrar;
+            datosFila[5] = usuario.isBloqueado() ? "🚫 Sí" : "✅ No";
+            
             vista.modeloTablaUsuarios.addRow(datosFila);
         }
     }
+    
     private void cargarUsuarioSeleccionado() {
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
