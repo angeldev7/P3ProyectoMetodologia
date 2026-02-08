@@ -34,6 +34,9 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     private InventarioDAO modelo;
     private CarritoCompra carrito;
     private AccesoSistemaDAO accesoDAO;
+    private static final String PRODUCTO_NO_SELECCIONADO = "Producto No Seleccionado";
+    private static final String CONFIRMAR_ELIMINACION = "Confirmar Eliminación";
+    private static final String ELIMINACION_EXITOSA = "Eliminación Exitosa";
 
     public ControladorInventario(VentanaPrincipal vista, InventarioDAO  modelo) {
     	if (vista == null) {
@@ -318,7 +321,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     private void eliminarProducto() {
         int filaSeleccionada = vista.panelProductos.tablaProductos.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(vista, "Por favor seleccione un producto para eliminar.", "Producto No Seleccionado", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vista, "Por favor seleccione un producto para eliminar.", PRODUCTO_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -329,14 +332,14 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         int respuesta = JOptionPane.showConfirmDialog(vista, 
             "¿Está seguro de que desea eliminar el producto '" + nombre + "'?\n\n" +
             "Esta acción eliminará el producto de la base de datos MongoDB.", 
-            "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+            CONFIRMAR_ELIMINACION, JOptionPane.YES_NO_OPTION);
 
         if (respuesta == JOptionPane.YES_OPTION) {
             boolean eliminado = modelo.eliminarProducto(codigo);
             if (eliminado) {
                 JOptionPane.showMessageDialog(vista, 
                     "✅ Producto eliminado exitosamente de la base de datos.", 
-                    "Eliminación Exitosa", JOptionPane.INFORMATION_MESSAGE);
+                    ELIMINACION_EXITOSA, JOptionPane.INFORMATION_MESSAGE);
                 actualizarTablaProductos();
                 cargarProductosAlCombo();
                 limpiarFormularioProducto();
@@ -364,7 +367,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         if (codigoProducto == null || codigoProducto.isEmpty()) {
             JOptionPane.showMessageDialog(vista, 
                 "Por favor seleccione un producto del listado.", 
-                "Producto No Seleccionado", 
+                PRODUCTO_NO_SELECCIONADO, 
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -451,7 +454,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, 
                 "Por favor seleccione un producto del carrito para eliminar.", 
-                "Producto No Seleccionado", JOptionPane.WARNING_MESSAGE);
+                PRODUCTO_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -464,14 +467,14 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
             "¿Está seguro de que desea eliminar del carrito?\n" +
             "Producto: " + nombreProducto + "\n" +
             "Cantidad: " + cantidad, 
-            "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+            CONFIRMAR_ELIMINACION, JOptionPane.YES_NO_OPTION);
 
         if (respuesta == JOptionPane.YES_OPTION) {
             carrito.eliminarProducto(codigoProducto);
             actualizarCarritoEnVista();
             JOptionPane.showMessageDialog(vista, 
                 "Producto eliminado del carrito.", 
-                "Eliminación Exitosa", JOptionPane.INFORMATION_MESSAGE);
+                ELIMINACION_EXITOSA, JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

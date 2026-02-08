@@ -22,6 +22,8 @@ public class ControladorGestionUsuarios implements ActionListener {
     private PanelGestionUsuarios vista;
     private DAOUsuario daoUsuario;
     private DAORol daoRol;
+    private static final String USUARIO_NO_SELECCIONADO = "Usuario No Seleccionado";
+    private static final String ROL_NO_SELECCIONADO = "Rol No Seleccionado";
     
     public ControladorGestionUsuarios(PanelGestionUsuarios vista) {
         this.vista = vista;
@@ -198,7 +200,7 @@ public class ControladorGestionUsuarios implements ActionListener {
     private void eliminarUsuario() {
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(vista, "Por favor seleccione un usuario para eliminar.", "Usuario No Seleccionado", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vista, "Por favor seleccione un usuario para eliminar.", USUARIO_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
             return;
         }
         
@@ -227,7 +229,7 @@ public class ControladorGestionUsuarios implements ActionListener {
     private void resetearContrasena() {
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(vista, "Por favor seleccione un usuario para resetear la contraseña.", "Usuario No Seleccionado", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vista, "Por favor seleccione un usuario para resetear la contraseña.", USUARIO_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
             return;
         }
         
@@ -283,7 +285,7 @@ public class ControladorGestionUsuarios implements ActionListener {
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, "Por favor seleccione un usuario para bloquear.", 
-                "Usuario No Seleccionado", JOptionPane.WARNING_MESSAGE);
+                USUARIO_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
             return;
         }
         
@@ -336,7 +338,7 @@ public class ControladorGestionUsuarios implements ActionListener {
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, "Por favor seleccione un usuario para desbloquear.", 
-                "Usuario No Seleccionado", JOptionPane.WARNING_MESSAGE);
+                USUARIO_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
             return;
         }
         
@@ -380,7 +382,7 @@ public class ControladorGestionUsuarios implements ActionListener {
     private void editarRol() {
         int filaSeleccionada = vista.tablaRoles.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(vista, "Por favor seleccione un rol para editar.", "Rol No Seleccionado", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vista, "Por favor seleccione un rol para editar.", ROL_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
             return;
         }
         
@@ -400,7 +402,7 @@ public class ControladorGestionUsuarios implements ActionListener {
     private void eliminarRol() {
         int filaSeleccionada = vista.tablaRoles.getSelectedRow();
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(vista, "Por favor seleccione un rol para eliminar.", "Rol No Seleccionado", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(vista, "Por favor seleccione un rol para eliminar.", ROL_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
             return;
         }
         
