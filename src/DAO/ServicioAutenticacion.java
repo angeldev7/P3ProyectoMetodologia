@@ -14,6 +14,13 @@ public class ServicioAutenticacion {
     private Rol rolActual;
     private AccesoSistemaDAO accesoDAO;
 
+    // Constructor para testing con inyección de dependencias
+    public ServicioAutenticacion(DAOUsuario daoUsuario, DAORol daoRol, AccesoSistemaDAO accesoDAO) {
+        this.daoUsuario = daoUsuario;
+        this.daoRol = daoRol;
+        this.accesoDAO = accesoDAO;
+    }
+
     public ServicioAutenticacion() {
         this.daoUsuario = new DAOUsuario();
         this.daoRol = new DAORol();
