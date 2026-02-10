@@ -328,11 +328,13 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
         int filaModelo = vista.panelProductos.tablaProductos.convertRowIndexToModel(filaSeleccionada);
         String codigo = (String) vista.panelProductos.modeloTabla.getValueAt(filaModelo, 0);
         String nombre = (String) vista.panelProductos.modeloTabla.getValueAt(filaModelo, 1);
+	     // Sanitizar para prevenir inyección de caracteres especiales
+	     nombre = sanitizarTexto(nombre);
         
-        int respuesta = JOptionPane.showConfirmDialog(vista, 
-            "¿Está seguro de que desea eliminar el producto '" + nombre + "'?\n\n" +
-            "Esta acción eliminará el producto de la base de datos MongoDB.", 
-            CONFIRMAR_ELIMINACION, JOptionPane.YES_NO_OPTION);
+	     int respuesta = JOptionPane.showConfirmDialog(vista, 
+	    		    "¿Está seguro de que desea eliminar el producto '" + sanitizarTexto(nombre) + "'?\n\n" +
+	    		    "Esta acción eliminará el producto de la base de datos MongoDB.", 
+	    		    CONFIRMAR_ELIMINACION, JOptionPane.YES_NO_OPTION);
 
         if (respuesta == JOptionPane.YES_OPTION) {
             boolean eliminado = modelo.eliminarProducto(codigo);
@@ -460,7 +462,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
 
         int filaModelo = vista.panelVentas.tablaCarrito.convertRowIndexToModel(filaSeleccionada);
         String codigoProducto = (String) vista.panelVentas.modeloCarrito.getValueAt(filaModelo, 0);
-        String nombreProducto = (String) vista.panelVentas.modeloCarrito.getValueAt(filaModelo, 1);
+        String nombreProducto = sanitizarTexto((String) vista.panelVentas.modeloCarrito.getValueAt(filaModelo, 1));
         int cantidad = (Integer) vista.panelVentas.modeloCarrito.getValueAt(filaModelo, 3);
 
         int respuesta = JOptionPane.showConfirmDialog(vista, 
@@ -665,7 +667,8 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     	        	continue;
     	        }
     	        
-    	        String nombre = venta.getNombreProducto() != null ? venta.getNombreProducto() : "Producto desconocido";
+    	        String nombre = venta.getNombreProducto() != null ? 
+    	                sanitizarTexto(venta.getNombreProducto()) : "Producto desconocido";
     	        int cantidad = venta.getCantidad();
     	        double total = venta.getTotal();
     	        String fecha = venta.getFecha() != null ? venta.getFecha() : "Fecha desconocida";
@@ -987,5 +990,12 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
     private void filtrarProductos() {
         String consulta = vista.panelProductos.txtBuscar.getText();
         vista.panelProductos.filtrarTabla(consulta);
+    }
+    
+    private String sanitizarTexto(String texto) {
+        if (texto == null) return null;
+        
+        // Remover caracteres peligrosos para HTML/JavaScript
+        return texto.replaceAll("[<>\"'&]", "");
     }
 }

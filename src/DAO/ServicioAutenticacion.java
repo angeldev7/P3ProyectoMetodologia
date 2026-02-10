@@ -69,6 +69,8 @@ public class ServicioAutenticacion {
             return false;
         }
         
+        usuario = usuario.replaceAll("[<>\"'&;]", "");
+        
         Usuario user = daoUsuario.buscarUsuarioPorNombre(usuario);
         if (user == null) {
             accesoDAO.registrarAcceso(new AccesoSistema(

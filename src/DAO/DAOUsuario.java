@@ -140,6 +140,8 @@ public class DAOUsuario {
     		return null;
     	}
     	
+    	 usuario = usuario.replaceAll("[<>\"'&;]", "");
+    	
     	try {
             Document doc = coleccion.find(Filters.eq("usuario", usuario)).first();
             if (doc != null) {

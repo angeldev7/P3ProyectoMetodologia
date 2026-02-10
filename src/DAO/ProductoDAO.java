@@ -37,19 +37,33 @@ public class ProductoDAO {
     
     public void guardarProducto(Producto producto) {
         try {
+            // CORREGIR: Validar datos antes de insertar
+            String codigo = sanitizarCodigo(producto.getCodigo());
+            String nombre = sanitizarTexto(producto.getNombre());
+            String descripcion = sanitizarTexto(producto.getDescripcion());
+            
             Document docProducto = new Document()
-                .append("codigo", producto.getCodigo())
-                .append("nombre", producto.getNombre())
-                .append("descripcion", producto.getDescripcion())
+                .append("codigo", codigo)
+                .append("nombre", nombre)
+                .append("descripcion", descripcion)
                 .append("stock", producto.getStock())
                 .append("precio", producto.getPrecio())
                 .append("stockMinimo", producto.getStockMinimo());
             
             coleccionProductos.insertOne(docProducto);
-            logger.info("Producto guardado: " + producto.getCodigo());
+            logger.info("Producto guardado: " + codigo);
         } catch (Exception e) {
             logger.error("Error al guardar producto: " + e.getMessage());
         }
+    }
+    
+    private String sanitizarCodigo(String codigo) {
+        return codigo.replaceAll("[^a-zA-Z0-9-_]", "");
+    }
+
+    private String sanitizarTexto(String texto) {
+        if (texto == null) return "";
+        return texto.replaceAll("[<>\"'&;]", "");
     }
     
     public void actualizarProducto(Producto producto) {

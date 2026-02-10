@@ -205,12 +205,12 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
         
         int filaModelo = vista.tablaUsuarios.convertRowIndexToModel(filaSeleccionada);
-        String usuario = (String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0);
-        String rol = (String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 2);
+        String usuario = sanitizarTexto((String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0));
+        String rol = sanitizarTexto((String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 2));
         
         int respuesta = JOptionPane.showConfirmDialog(vista, 
-            "¿Está seguro de que desea eliminar al usuario '" + usuario + "'?", 
-            "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+        	    "¿Está seguro de que desea eliminar al usuario '" + sanitizarTexto(usuario) + "'?", 
+        	    "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
         
         if (respuesta == JOptionPane.YES_OPTION) {
             if (daoUsuario.eliminarUsuario(usuario)) {
@@ -234,9 +234,11 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
         
         int filaModelo = vista.tablaUsuarios.convertRowIndexToModel(filaSeleccionada);
-        String usuario = (String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0);
+        String usuario = sanitizarTexto((String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0));
+        String usuarioSanitizado = sanitizarTexto(usuario);
+        String nuevaContrasena = JOptionPane.showInputDialog(vista, 
+            "Ingrese la nueva contraseña para " + usuarioSanitizado + ":");
         
-        String nuevaContrasena = JOptionPane.showInputDialog(vista, "Ingrese la nueva contraseña para " + usuario + ":");
         if (nuevaContrasena != null && !nuevaContrasena.trim().isEmpty()) {
             if (daoUsuario.cambiarContrasena(usuario, nuevaContrasena.trim())) {
                 JOptionPane.showMessageDialog(vista, "✅ Contraseña actualizada exitosamente (encriptada).", "Contraseña Actualizada", JOptionPane.INFORMATION_MESSAGE);
@@ -290,7 +292,7 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
         
         int filaModelo = vista.tablaUsuarios.convertRowIndexToModel(filaSeleccionada);
-        String usuario = (String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0);
+        String usuario = sanitizarTexto((String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0));
         
         // Verificar si no es el usuario admin
         if ("admin".equals(usuario)) {
@@ -301,7 +303,7 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
         
         // Verificar si ya está bloqueado
-        String estado = (String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 4);
+        String estado = sanitizarTexto((String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 4));
         boolean yaBloqueado = estado != null && 
                              (estado.contains("BLOQUEADO") || 
                               estado.contains("Bloqueado") || 
@@ -315,9 +317,9 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
         
         int respuesta = JOptionPane.showConfirmDialog(vista, 
-            "¿Está seguro de que desea bloquear al usuario '" + usuario + "'?\n\n" +
-            "El usuario no podrá iniciar sesión hasta que sea desbloqueado.", 
-            "Confirmar Bloqueo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        	    "¿Está seguro de que desea bloquear al usuario '" + sanitizarTexto(usuario) + "'?\n\n" +
+        	    "El usuario no podrá iniciar sesión hasta que sea desbloqueado.", 
+        	    "Confirmar Bloqueo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         
         if (respuesta == JOptionPane.YES_OPTION) {
             if (daoUsuario.bloquearUsuario(usuario)) {
@@ -343,10 +345,10 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
         
         int filaModelo = vista.tablaUsuarios.convertRowIndexToModel(filaSeleccionada);
-        String usuario = (String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0);
+        String usuario = sanitizarTexto((String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0));
         
         // Verificar si ya está activo
-        String estado = (String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 4);
+        String estado = sanitizarTexto((String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 4));
         boolean yaDesbloqueado = !(estado != null && 
                                   (estado.contains("BLOQUEADO") || 
                                    estado.contains("Bloqueado") || 
@@ -360,9 +362,9 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
         
         int respuesta = JOptionPane.showConfirmDialog(vista, 
-            "¿Está seguro de que desea desbloquear al usuario '" + usuario + "'?\n\n" +
-            "El usuario podrá iniciar sesión nuevamente.", 
-            "Confirmar Desbloqueo", JOptionPane.YES_NO_OPTION);
+        	    "¿Está seguro de que desea desbloquear al usuario '" + sanitizarTexto(usuario) + "'?\n\n" +
+        	    "El usuario podrá iniciar sesión nuevamente.", 
+        	    "Confirmar Desbloqueo", JOptionPane.YES_NO_OPTION);
         
         if (respuesta == JOptionPane.YES_OPTION) {
             if (daoUsuario.desbloquearUsuario(usuario)) {
@@ -395,8 +397,8 @@ public class ControladorGestionUsuarios implements ActionListener {
         vista.establecerPermisosDesdeString(permisos);
         
         JOptionPane.showMessageDialog(vista, 
-            "Rol '" + nombreRol + "' cargado para edición.\nModifique los permisos y haga clic en 'Guardar Rol' para actualizar.", 
-            "Editar Rol", JOptionPane.INFORMATION_MESSAGE);
+        	    "Rol '" + sanitizarTexto(nombreRol) + "' cargado para edición.\nModifique los permisos y haga clic en 'Guardar Rol' para actualizar.", 
+        	    "Editar Rol", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void eliminarRol() {
@@ -412,16 +414,15 @@ public class ControladorGestionUsuarios implements ActionListener {
         
         // Verificar si hay usuarios con este rol
         if (contadorUsuarios > 0) {
-            JOptionPane.showMessageDialog(vista, 
-                "❌ No se puede eliminar el rol '" + nombreRol + "' porque tiene " + contadorUsuarios + " usuario(s) asignado(s).\n\n" +
-                "Reasigne los usuarios a otro rol antes de eliminar este.", 
-                "Rol en Uso", JOptionPane.ERROR_MESSAGE);
-            return;
+        	JOptionPane.showMessageDialog(vista, 
+        		    "❌ No se puede eliminar el rol '" + sanitizarTexto(nombreRol) + "' porque tiene " + contadorUsuarios + " usuario(s) asignado(s).\n\n" +
+        		    "Reasigne los usuarios a otro rol antes de eliminar este.", 
+        		    "Rol en Uso", JOptionPane.ERROR_MESSAGE);
         }
         
         int respuesta = JOptionPane.showConfirmDialog(vista, 
-            "¿Está seguro de que desea eliminar el rol '" + nombreRol + "'?\n\nEsta acción no se puede deshacer.", 
-            "Confirmar Eliminación de Rol", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        	    "¿Está seguro de que desea eliminar el rol '" + sanitizarTexto(nombreRol) + "'?\n\nEsta acción no se puede deshacer.", 
+        	    "Confirmar Eliminación de Rol", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         
         if (respuesta == JOptionPane.YES_OPTION) {
             if (daoRol.eliminarRol(nombreRol)) {
@@ -432,6 +433,13 @@ public class ControladorGestionUsuarios implements ActionListener {
                 JOptionPane.showMessageDialog(vista, "❌ Error al eliminar el rol.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+    
+    private String sanitizarTexto(String texto) {
+        if (texto == null) return "";
+        
+        // Remover caracteres peligrosos para HTML/JavaScript
+        return texto.replaceAll("[<>\"'&;]", "");
     }
     
     private void cargarUsuariosDesdeBaseDatos() {
@@ -488,7 +496,7 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
         
         int filaModelo = vista.tablaUsuarios.convertRowIndexToModel(filaSeleccionada);
-        String usuario = (String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0);
+        String usuario = sanitizarTexto((String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0));
         
         Usuario user = daoUsuario.buscarUsuarioPorNombre(usuario);
         if (user != null) {

@@ -375,7 +375,8 @@ public class PanelGestionUsuarios extends JPanel {
         chkGestionarUsuarios.setSelected(false);
         
         if (permisosStr != null && !permisosStr.isEmpty()) {
-            String[] permisos = permisosStr.split(",");
+            String permisosLimpio = permisosStr.replaceAll("[<>\"'&;]", "");
+            String[] permisos = permisosLimpio.split(",");
             for (String permiso : permisos) {
                 switch (permiso.trim()) {
                     case "puedeGestionarProductos":

@@ -39,19 +39,29 @@ public class AccesoSistemaDAO {
     
     public void registrarAcceso(AccesoSistema acceso) {
         try {
+            String usuario = sanitizarTexto(acceso.getUsuario());
+            String rol = sanitizarTexto(acceso.getRol());
+            String mensaje = sanitizarTexto(acceso.getMensaje());
+            
             Document docAcceso = new Document()
-                .append("usuario", acceso.getUsuario())
-                .append("rol", acceso.getRol())
+                .append("usuario", usuario)
+                .append("rol", rol)
                 .append("fechaHora", acceso.getFechaHora())
                 .append("tipoAcceso", acceso.getTipoAcceso())
                 .append("ip", acceso.getIp())
-                .append("mensaje", acceso.getMensaje());
+                .append("mensaje", mensaje);
             
             coleccionAccesos.insertOne(docAcceso);
-            logger.info("Registro de acceso guardado: " + acceso.getUsuario() + " - " + acceso.getTipoAcceso());
+            logger.info("Registro de acceso guardado: " + usuario + " - " + acceso.getTipoAcceso());
         } catch (Exception e) {
             logger.error("❌ Error al registrar acceso: " + e.getMessage());
         }
+    }
+
+    // Añadir método:
+    private String sanitizarTexto(String texto) {
+        if (texto == null) return "";
+        return texto.replaceAll("[<>\"'&;]", "");
     }
     
     public List<AccesoSistema> obtenerTodosAccesos() {
