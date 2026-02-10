@@ -25,7 +25,15 @@ public class Main {
     static {
         // Forzar a Logback a usar archivo de configuración
         System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, "logback.xml");
+        
+        // Registrar hook de shutdown
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Cerrando conexiones del sistema...");
+            ConexionBaseDatos.cerrar();
+        }));
     }
+    
+    
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {

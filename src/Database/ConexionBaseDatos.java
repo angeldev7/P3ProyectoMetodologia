@@ -22,7 +22,8 @@ public class ConexionBaseDatos {
     private static MongoClient clienteMongo;
     private static MongoDatabase baseDatos;
     private static final Logger logger = LoggerFactory.getLogger(ConexionBaseDatos.class);
-    
+    private static int referenciaCount = 0;
+    private static final Object lock = new Object();
     private static final String NOMBRE_BASE_DATOS = "ferreteria_carlin";
     
     // Método para cargar la configuración de forma segura
@@ -39,30 +40,59 @@ public class ConexionBaseDatos {
     }
     
     public static void conectar() {
-        try {
-            String cadenaConexion = getConnectionString();
-            if (cadenaConexion == null || cadenaConexion.isEmpty()) {
-            	throw new ConexionBaseDatosException("La cadena de conexion esta vacia o no se pudo cargar desde config.properties");
+        synchronized (lock) {
+            try {
+                if (clienteMongo == null) {
+                    String cadenaConexion = getConnectionString();
+                    if (cadenaConexion == null || cadenaConexion.isEmpty()) {
+                        throw new ConexionBaseDatosException("La cadena de conexion esta vacia o no se pudo cargar desde config.properties");
+                    }
+                    
+                    clienteMongo = MongoClients.create(cadenaConexion);
+                    if (clienteMongo == null) {
+                        throw new ConexionBaseDatosException("No se pudo crear el cliente MongoDB");
+                    }
+                    
+                    baseDatos = clienteMongo.getDatabase(NOMBRE_BASE_DATOS);
+                    if (baseDatos == null) {
+                        throw new ConexionBaseDatosException("No se pudo obtener la base de datos: " + NOMBRE_BASE_DATOS);
+                    }
+                    
+                    baseDatos.runCommand(new Document("ping", 1));
+                    logger.info("Conectado a la base de datos: " + NOMBRE_BASE_DATOS);
+                }
+                referenciaCount++;
+            } catch (Exception e) {
+                logger.error("Error al conectar a la base de datos: " + e.getMessage());
+                throw new ConexionBaseDatosException("Error al conectar a MongoDB", e);
             }
-            
-            clienteMongo = MongoClients.create(cadenaConexion);
-            if (clienteMongo == null) {
-                throw new ConexionBaseDatosException("No se pudo crear el cliente MongoDB");
-            }
-            
-            baseDatos = clienteMongo.getDatabase(NOMBRE_BASE_DATOS);
-            if (baseDatos == null) {
-                throw new ConexionBaseDatosException("No se pudo obtener la base de datos: " + NOMBRE_BASE_DATOS);
-            }
-            
-            baseDatos.runCommand(new Document("ping", 1));
-            logger.info("Conectado a la base de datos: " + NOMBRE_BASE_DATOS);
-        } catch (Exception e) {
-            logger.error("Error al conectar a la base de datos: " + e.getMessage());
-            throw new ConexionBaseDatosException("Error al conectar a MongoDB", e);
         }
     }
     
+    public static void cerrar() {
+        synchronized (lock) {
+            referenciaCount--;
+            if (referenciaCount <= 0 && clienteMongo != null) {
+                clienteMongo.close();
+                clienteMongo = null;
+                baseDatos = null;
+                logger.info("Conexión cerrada");
+            }
+        }
+    }
+    
+    // Mantener el método existente para compatibilidad
+    public static void cerrarForzado() {
+        synchronized (lock) {
+            if (clienteMongo != null) {
+                clienteMongo.close();
+                clienteMongo = null;
+                baseDatos = null;
+                referenciaCount = 0;
+                logger.info("Conexión forzada cerrada");
+            }
+        }
+    }
     public static MongoDatabase getBaseDatos() {
         if (baseDatos == null) {
             conectar();
@@ -72,12 +102,5 @@ public class ConexionBaseDatos {
     
     public static MongoCollection<Document> getColeccion(String nombreColeccion) {
         return getBaseDatos().getCollection(nombreColeccion);
-    }
-    
-    public static void cerrar() {
-        if (clienteMongo != null) {
-            clienteMongo.close();
-            logger.info("Conexión cerrada");
-        }
     }
 }

@@ -3,6 +3,7 @@ package DAO;
 import Database.ConexionBaseDatos;
 import model.Usuario;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
@@ -28,9 +29,9 @@ public class DAOUsuario {
     
     public List<Usuario> obtenerTodosUsuarios() {
         List<Usuario> usuarios = new ArrayList<>();
-        try {
-            for (Document doc : coleccion.find()) {
-                Usuario usuario = documentoAUsuario(doc);
+        try (MongoCursor<Document> cursor = coleccion.find().iterator()) {
+            while (cursor.hasNext()) {
+                Usuario usuario = documentoAUsuario(cursor.next());
                 if (usuario != null) {
                     usuarios.add(usuario);
                 }
@@ -40,6 +41,7 @@ public class DAOUsuario {
         }
         return usuarios;
     }
+    
     public boolean autenticar(String usuario, String contrasena) {
         try {
             Usuario user = buscarUsuarioPorNombre(usuario);

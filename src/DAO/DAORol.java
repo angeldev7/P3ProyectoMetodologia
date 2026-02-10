@@ -4,6 +4,7 @@ package DAO;
 import Database.ConexionBaseDatos;
 import model.Rol;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
@@ -47,8 +48,12 @@ public class DAORol {
     
     public List<Rol> obtenerTodosRoles() {
         List<Rol> roles = new ArrayList<>();
-        for (Document doc : coleccion.find()) {
-            roles.add(documentoARol(doc));
+        try (MongoCursor<Document> cursor = coleccion.find().iterator()) {
+            while (cursor.hasNext()) {
+                roles.add(documentoARol(cursor.next()));
+            }
+        } catch (Exception e) {
+            logger.error("Error obteniendo roles: " + e.getMessage());
         }
         return roles;
     }

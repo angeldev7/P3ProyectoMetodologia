@@ -2,6 +2,7 @@
 package DAO;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
@@ -112,9 +113,9 @@ public class ProductoDAO {
     
     public List<Producto> obtenerTodosProductos() {
         List<Producto> productos = new ArrayList<>();
-        try {
-            for (Document doc : coleccionProductos.find()) {
-                productos.add(convertirDocumentAProducto(doc));
+        try (MongoCursor<Document> cursor = coleccionProductos.find().iterator()) {
+            while (cursor.hasNext()) {
+                productos.add(convertirDocumentAProducto(cursor.next()));
             }
             logger.info("Productos obtenidos: " + productos.size());
         } catch (Exception e) {
@@ -127,13 +128,15 @@ public class ProductoDAO {
         List<Producto> productos = new ArrayList<>();
         try {
             Bson filtro = Filters.gt("stock", 0);
-            for (Document doc : coleccionProductos.find(filtro)) {
-                productos.add(convertirDocumentAProducto(doc));
+            try (MongoCursor<Document> cursor = coleccionProductos.find(filtro).iterator()) {
+                while (cursor.hasNext()) {
+                    productos.add(convertirDocumentAProducto(cursor.next()));
+                }
+                logger.info("✅ Productos con stock obtenidos: " + productos.size());
             }
-            logger.info("✅ Productos con stock obtenidos: " + productos.size());
         } catch (Exception e) {
             logger.error("❌ Error al obtener productos con stock: " + e.getMessage());
-         }
+        }
         return productos;
     }
     
