@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 public class MigradorContrasenas {
 	private static final Logger logger = LoggerFactory.getLogger(MigradorContrasenas.class);
     public static void migrarUsuariosExistentes() {
-        System.out.println("🔄 Iniciando migración de contraseñas...");
+        logger.info("🔄 Iniciando migración de contraseñas...");
         DAOUsuario daoUsuario = new DAOUsuario();
         List<Usuario> usuarios = daoUsuario.obtenerTodosUsuarios();
         

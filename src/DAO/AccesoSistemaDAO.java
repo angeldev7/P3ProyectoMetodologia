@@ -63,7 +63,6 @@ public class AccesoSistemaDAO {
             logger.info("✅ Historial de accesos obtenido: " + accesos.size() + " registros");
         } catch (Exception e) {
             logger.error("❌ Error al obtener historial de accesos: " + e.getMessage());
-            e.printStackTrace();
         }
         return accesos;
     }

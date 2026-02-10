@@ -119,8 +119,7 @@ public class ProductoDAO {
             logger.info("✅ Productos con stock obtenidos: " + productos.size());
         } catch (Exception e) {
             logger.error("❌ Error al obtener productos con stock: " + e.getMessage());
-            e.printStackTrace();
-        }
+         }
         return productos;
     }
     
@@ -134,7 +133,6 @@ public class ProductoDAO {
             logger.info("✅ Stock actualizado en MongoDB: " + codigo + " -> " + nuevoStock);
         } catch (Exception e) {
             logger.error("❌ Error al actualizar stock en MongoDB: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -144,7 +142,6 @@ public class ProductoDAO {
             return coleccionProductos.countDocuments(filtro) > 0;
         } catch (Exception e) {
             logger.error("❌ Error al verificar existencia de producto: " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }
@@ -154,7 +151,6 @@ public class ProductoDAO {
             return coleccionProductos.countDocuments();
         } catch (Exception e) {
             logger.error("❌ Error al contar productos: " + e.getMessage());
-            e.printStackTrace();
             return 0;
         }
     }

@@ -584,7 +584,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
 
     private void generarReporte() {
     	if (vista == null || vista.panelReportes == null) {
-            System.err.println("⚠️ Componentes de vista no inicializados para generar reporte");
+            logger.error("⚠️ Componentes de vista no inicializados para generar reporte");
             return;
         }
         
@@ -949,7 +949,7 @@ public class ControladorInventario implements ActionListener, ListSelectionListe
                 }
             }
             
-            System.out.println("Total productos con stock agregados: " + productosConStock);
+            logger.info("Total productos con stock agregados: " + productosConStock);
             
             if (productosConStock == 0) {
                 logger.info("Advertencia: No hay productos con stock disponible");

@@ -252,7 +252,6 @@ public class DAOUsuario {
         } catch (Exception e) {
             logger.error("❌ Error grave convirtiendo documento a Usuario: " + e.getMessage());
             logger.error("📄 Documento: " + doc.toJson());
-            e.printStackTrace();
             return null;
         }
     }

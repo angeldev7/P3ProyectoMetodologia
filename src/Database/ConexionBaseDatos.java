@@ -34,7 +34,6 @@ public class ConexionBaseDatos {
             return prop.getProperty("db.connection_string");
         } catch (IOException ex) {
             logger.error("Error: No se pudo encontrar el archivo 'config.properties'. Asegúrate de que esté en la raíz del proyecto.");
-            ex.printStackTrace();
             return null;
         }
     }

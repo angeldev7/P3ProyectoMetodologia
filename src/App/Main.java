@@ -37,7 +37,7 @@ public class Main {
                     try {
                         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        logger.error("Error al configurar el Look and Feel: " + ex.getMessage());
                     }
                 }
                 
@@ -85,7 +85,7 @@ public class Main {
         ventanaPrincipal = new VentanaPrincipal();
         
         // Configurar controladores
-        System.out.println("Creando controladores...");
+        logger.info("Creando controladores...");
         new ControladorInventario(ventanaPrincipal, inventario);
         new ControladorGestionUsuarios(ventanaPrincipal.panelGestionUsuarios);
         
@@ -94,8 +94,8 @@ public class Main {
         String rol = servicioAuth.getRolActual();
         List<String> permisos = servicioAuth.getPermisosActuales();
         
-        System.out.println("Usuario: " + usuario + " | Rol: " + rol);
-        System.out.println("Permisos: " + permisos);
+        logger.info("Usuario: " + usuario + " | Rol: " + rol);
+        logger.info("Permisos: " + permisos);
         
         // Configurar título
         ventanaPrincipal.setTitle("Ferretería Carlín - Sistema de Gestión (Usuario: " + usuario + " | Rol: " + rol + ")");
