@@ -9,40 +9,24 @@ public class PasswordHasher {
     
     // Generar hash de contraseña
     public static String hashPassword(String password) {
-        // Manejar caso null
-        if (password == null) {
-            return null;
-        }
-        
         try {
             return BCrypt.hashpw(password, BCrypt.gensalt());
         } catch (Exception e) {
-<<<<<<< HEAD
             logger.error("❌ Error hashing password: " + e.getMessage());
-=======
-            System.err.println("Error hashing password: " + e.getMessage());
->>>>>>> origin/Test
             return null;
         }
     }
     
     // Verificar contraseña
     public static boolean checkPassword(String password, String hashedPassword) {
-        // Manejar casos null
-        if (password == null || hashedPassword == null || hashedPassword.isEmpty()) {
-            return false;
-        }
-        
         try {
+            if (hashedPassword == null || hashedPassword.isEmpty()) {
+                return false;
+            }
             return BCrypt.checkpw(password, hashedPassword);
         } catch (Exception e) {
-<<<<<<< HEAD
             logger.error("❌ Error verificando contraseña: " + e.getMessage());
             logger.error("🔍 Hash proporcionado: " + hashedPassword);
-=======
-            System.err.println("Error verificando contraseña: " + e.getMessage());
-            System.err.println("Hash proporcionado: " + hashedPassword);
->>>>>>> origin/Test
             return false;
         }
     }

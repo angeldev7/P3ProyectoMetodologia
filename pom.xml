@@ -38,8 +38,17 @@
             <version>5.10.1</version>
             <scope>test</scope>
         </dependency>
-<<<<<<< HEAD
-		
+        
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-api</artifactId>
+		    <version>1.7.36</version>
+		</dependency>
+		<dependency>
+		    <groupId>ch.qos.logback</groupId>
+		    <artifactId>logback-classic</artifactId>
+		    <version>1.2.12</version>
+		</dependency>
 		
 		<!-- SLF4J API -->
 	    <dependency>
@@ -54,7 +63,6 @@
 	        <artifactId>logback-classic</artifactId>
 	        <version>1.4.11</version>
 	    </dependency>
-=======
         
         <!-- Mockito para mocking en tests -->
         <dependency>
@@ -80,7 +88,6 @@
             <scope>test</scope>
         </dependency>
 
->>>>>>> origin/Test
     </dependencies>
 
     <build>

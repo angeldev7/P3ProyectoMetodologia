@@ -1,10 +1,7 @@
 // App/Main.java
 package App;
-<<<<<<< HEAD
 import ch.qos.logback.classic.util.ContextInitializer;
 import java.util.List;
-=======
->>>>>>> origin/Test
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -17,12 +14,6 @@ import DAO.ServicioAutenticacion;
 import model.InventarioDAO;  // CAMBIADO: De Inventario a InventarioDAO
 import view.VentanaPrincipal;
 import view.VentanaLogin;
-<<<<<<< HEAD
-=======
-
-import java.util.List;
-
->>>>>>> origin/Test
 public class Main {
     private static ServicioAutenticacion servicioAuth;
     private static VentanaPrincipal ventanaPrincipal;
@@ -58,9 +49,6 @@ public class Main {
                 }
                 
                 ConexionBaseDatos.conectar();
-                
-                // Ejecutar migración de contraseñas si es necesario
-                MigradorContrasenas.migrarUsuariosExistentes();
                 
                 // Inicializar servicios
                 servicioAuth = new ServicioAutenticacion();
@@ -117,7 +105,7 @@ public class Main {
         logger.info("Permisos: " + permisos);
         
         // Configurar título
-        ventanaPrincipal.setTitle("Ferretería Carlin - Sistema de Gestión (Usuario: " + usuario + " | Rol: " + rol + ")");
+        ventanaPrincipal.setTitle("Ferretería Carlín - Sistema de Gestión (Usuario: " + usuario + " | Rol: " + rol + ")");
         
         // Aplicar permisos según el rol
         if (permisos != null && !permisos.isEmpty()) {
