@@ -10,6 +10,7 @@ permissions:
   checks: write
   contents: write
   pull-requests: write
+  statuses: write
 
 jobs:
   build-and-test:
@@ -27,6 +28,7 @@ jobs:
         cache: maven
 
     - name: Compilar y ejecutar tests con coverage
+      id: build
       run: mvn clean verify -B -Dnet.bytebuddy.experimental=true
 
     - name: Publicar reporte de tests
@@ -70,6 +72,24 @@ jobs:
         default_author: github_actions
         message: 'ci: actualizar badge de cobertura [skip ci]'
         add: '*.svg'
+      continue-on-error: true
+
+    - name: Propagar estado CI al commit del badge
+      if: github.event_name == 'push' && always()
+      run: |
+        BADGE_SHA=$(git rev-parse HEAD)
+        if [ "${{ steps.build.outcome }}" == "success" ]; then
+          STATE="success"
+          DESC="Build y tests pasaron correctamente"
+        else
+          STATE="failure"
+          DESC="Build o tests fallaron"
+        fi
+        curl -s -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github+v3+json" \
+          "https://api.github.com/repos/${{ github.repository }}/statuses/$BADGE_SHA" \
+          -d "{\"state\":\"$STATE\",\"description\":\"$DESC\",\"context\":\"CI Pipeline - Pruebas y Coverage\"}"
       continue-on-error: true
 
     - name: Subir artefacto JAR
