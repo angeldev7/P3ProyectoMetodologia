@@ -21,7 +21,7 @@ public class PanelVentas extends JPanel {
     public DefaultTableModel modeloCarrito, modeloTabla;
     public JLabel lblTotalCarrito, lblCantidadItems;
     
-    private transient CarritoCompra carrito;
+    private CarritoCompra carrito;
 
     public PanelVentas() {
         setBackground(new Color(45, 45, 45));
@@ -43,8 +43,8 @@ public class PanelVentas extends JPanel {
         txtCantidad.setToolTipText("Ingrese la cantidad a agregar al carrito");
         
         btnAgregarAlCarrito = crearBoton("➕ Agregar al Carrito", new Color(0, 123, 255));
-        btnEliminarDelCarrito = crearBoton("Eliminar del Carrito", new Color(220, 53, 69));
-        btnProcesarVenta = crearBoton("Procesar Venta", new Color(40, 167, 69));
+        btnEliminarDelCarrito = crearBoton("🗑️ Eliminar del Carrito", new Color(220, 53, 69));
+        btnProcesarVenta = crearBoton("💰 Procesar Venta", new Color(40, 167, 69));
         
         lblTotalCarrito = crearEtiqueta("$0.00");
         lblCantidadItems = crearEtiqueta("0");
@@ -91,7 +91,7 @@ public class PanelVentas extends JPanel {
         
         // Agregar pestañas - solo carrito e historial
         panelPestanas.addTab("🛒 Realizar Venta", crearPanelCarrito());
-        panelPestanas.addTab("Historial Ventas", crearPanelHistorialVentas());
+        panelPestanas.addTab("📋 Historial Ventas", crearPanelHistorialVentas());
         
         panelPrincipal.add(panelPestanas, BorderLayout.CENTER);
         add(panelPrincipal, BorderLayout.CENTER);
@@ -275,11 +275,7 @@ public class PanelVentas extends JPanel {
             
             logger.info("Tabla del carrito actualizada. Total: $" + carrito.getTotal());
         } else {
-<<<<<<< HEAD
             logger.error("❌ Error: carrito o modeloCarrito es null");
-=======
-            System.err.println("Error: carrito o modeloCarrito es null");
->>>>>>> origin/Test
         }
     }
 
@@ -296,12 +292,12 @@ public class PanelVentas extends JPanel {
         }
     }
     
-    // NUEVO: Método para obtener el carrito
+    // ✅ NUEVO: Método para obtener el carrito
     public CarritoCompra getCarrito() {
         return carrito;
     }
     
-    // NUEVO: Método para actualizar combo de productos
+    // ✅ NUEVO: Método para actualizar combo de productos
     public void actualizarComboProductos(java.util.List<String> productos) {
         cmbProductos.removeAllItems();
         for (String producto : productos) {
@@ -312,7 +308,7 @@ public class PanelVentas extends JPanel {
         }
     }
     
-    // NUEVO: Método para obtener la cantidad ingresada
+    // ✅ NUEVO: Método para obtener la cantidad ingresada
     public int getCantidad() {
         try {
             return Integer.parseInt(txtCantidad.getText().trim());
@@ -321,7 +317,7 @@ public class PanelVentas extends JPanel {
         }
     }
     
-    // NUEVO: Método para obtener el producto seleccionado
+    // ✅ NUEVO: Método para obtener el producto seleccionado
     public String getProductoSeleccionado() {
         return (String) cmbProductos.getSelectedItem();
     }
