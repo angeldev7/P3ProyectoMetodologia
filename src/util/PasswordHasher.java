@@ -1,8 +1,11 @@
 package util;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PasswordHasher {
+	private static final Logger logger = LoggerFactory.getLogger(PasswordHasher.class);
     
     // Generar hash de contraseña
     public static String hashPassword(String password) {
@@ -14,7 +17,11 @@ public class PasswordHasher {
         try {
             return BCrypt.hashpw(password, BCrypt.gensalt());
         } catch (Exception e) {
+<<<<<<< HEAD
+            logger.error("❌ Error hashing password: " + e.getMessage());
+=======
             System.err.println("Error hashing password: " + e.getMessage());
+>>>>>>> origin/Test
             return null;
         }
     }
@@ -29,8 +36,13 @@ public class PasswordHasher {
         try {
             return BCrypt.checkpw(password, hashedPassword);
         } catch (Exception e) {
+<<<<<<< HEAD
+            logger.error("❌ Error verificando contraseña: " + e.getMessage());
+            logger.error("🔍 Hash proporcionado: " + hashedPassword);
+=======
             System.err.println("Error verificando contraseña: " + e.getMessage());
             System.err.println("Hash proporcionado: " + hashedPassword);
+>>>>>>> origin/Test
             return false;
         }
     }

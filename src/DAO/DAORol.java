@@ -4,15 +4,20 @@ package DAO;
 import Database.ConexionBaseDatos;
 import model.Rol;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class DAORol {
     private MongoCollection<Document> coleccion;
+    private static final Logger logger = LoggerFactory.getLogger(DAORol.class);
     
     // Constructor para testing con inyección de dependencias
     public DAORol(MongoCollection<Document> coleccion) {
@@ -33,7 +38,7 @@ public class DAORol {
             coleccion.insertOne(doc);
             return true;
         } catch (Exception e) {
-            System.err.println("Error creando rol: " + e.getMessage());
+            logger.error("Error creando rol: " + e.getMessage());
             return false;
         }
     }
@@ -48,8 +53,12 @@ public class DAORol {
     
     public List<Rol> obtenerTodosRoles() {
         List<Rol> roles = new ArrayList<>();
-        for (Document doc : coleccion.find()) {
-            roles.add(documentoARol(doc));
+        try (MongoCursor<Document> cursor = coleccion.find().iterator()) {
+            while (cursor.hasNext()) {
+                roles.add(documentoARol(cursor.next()));
+            }
+        } catch (Exception e) {
+            logger.error("Error obteniendo roles: " + e.getMessage());
         }
         return roles;
     }
@@ -64,7 +73,7 @@ public class DAORol {
             coleccion.updateOne(Filters.eq("nombre", nombre), actualizaciones);
             return true;
         } catch (Exception e) {
-            System.err.println("Error actualizando rol: " + e.getMessage());
+            logger.error("Error actualizando rol: " + e.getMessage());
             return false;
         }
     }
@@ -74,7 +83,7 @@ public class DAORol {
             coleccion.deleteOne(Filters.eq("nombre", nombre));
             return true;
         } catch (Exception e) {
-            System.err.println("Error eliminando rol: " + e.getMessage());
+            logger.error("Error eliminando rol: " + e.getMessage());
             return false;
         }
     }
@@ -92,7 +101,7 @@ public class DAORol {
             }
             return false;
         } catch (Exception e) {
-            System.err.println("Error actualizando contador de usuarios: " + e.getMessage());
+            logger.error("Error actualizando contador de usuarios: " + e.getMessage());
             return false;
         }
     }

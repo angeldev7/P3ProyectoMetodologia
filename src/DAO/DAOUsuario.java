@@ -3,12 +3,15 @@ package DAO;
 import Database.ConexionBaseDatos;
 import model.Usuario;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -18,6 +21,7 @@ import util.PasswordHasher;
 
 public class DAOUsuario {
     private MongoCollection<Document> coleccion;
+    private static final Logger logger = LoggerFactory.getLogger(DAOUsuario.class);
     
     // Constructor para testing con inyección de dependencias
     public DAOUsuario(MongoCollection<Document> coleccion) {
@@ -30,36 +34,37 @@ public class DAOUsuario {
     
     public List<Usuario> obtenerTodosUsuarios() {
         List<Usuario> usuarios = new ArrayList<>();
-        try {
-            for (Document doc : coleccion.find()) {
-                Usuario usuario = documentoAUsuario(doc);
+        try (MongoCursor<Document> cursor = coleccion.find().iterator()) {
+            while (cursor.hasNext()) {
+                Usuario usuario = documentoAUsuario(cursor.next());
                 if (usuario != null) {
                     usuarios.add(usuario);
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error obteniendo usuarios: " + e.getMessage());
+            logger.error("Error obteniendo usuarios: " + e.getMessage());
         }
         return usuarios;
     }
+    
     public boolean autenticar(String usuario, String contrasena) {
         try {
             Usuario user = buscarUsuarioPorNombre(usuario);
             if (user != null) {
                 if (user.isBloqueado()) {
-                    System.out.println("Usuario bloqueado: " + usuario);
+                    logger.info("Usuario bloqueado: " + usuario);
                     return false;
                 }
                 
-                System.out.println("Usuario encontrado: " + user.getUsuario());
+                logger.info("Usuario encontrado: " + user.getUsuario());
                 boolean passwordValido = PasswordHasher.checkPassword(contrasena, user.getContrasena());
-                System.out.println("Verificación de contraseña: " + (passwordValido ? "válida" : "inválida"));
+                logger.info("Verificación de contraseña: " + (passwordValido ? "válida" : "inválida"));
                 return passwordValido;
             } else {
-                System.out.println("Usuario no encontrado: " + usuario);
+                logger.info("Usuario no encontrado: " + usuario);
             }
         } catch (Exception e) {
-            System.err.println("Error en autenticación: " + e.getMessage());
+            logger.error("Error en autenticación: " + e.getMessage());
         }
         return false;
     }
@@ -68,7 +73,7 @@ public class DAOUsuario {
         try {
             String contrasenaEncriptada = PasswordHasher.hashPassword(usuario.getContrasena());
             if (contrasenaEncriptada == null) {
-                System.err.println("Error al encriptar contraseña");
+                logger.error("Error al encriptar contraseña");
                 return false;
             }
             
@@ -80,10 +85,10 @@ public class DAOUsuario {
                 .append("fechaCreacion", usuario.getFechaCreacion());
             
             coleccion.insertOne(doc);
-            System.out.println("Usuario creado con contraseña encriptada: " + usuario.getUsuario());
+            logger.info("Usuario creado con contraseña encriptada: " + usuario.getUsuario());
             return true;
         } catch (Exception e) {
-            System.err.println("Error creando usuario: " + e.getMessage());
+            logger.error("Error creando usuario: " + e.getMessage());
             return false;
         }
     }
@@ -92,7 +97,7 @@ public class DAOUsuario {
         try {
             String contrasenaEncriptada = PasswordHasher.hashPassword(nuevaContrasena);
             if (contrasenaEncriptada == null) {
-                System.err.println("Error al encriptar nueva contraseña");
+                logger.error("Error al encriptar nueva contraseña");
                 return false;
             }
             
@@ -100,10 +105,10 @@ public class DAOUsuario {
                 Filters.eq("usuario", usuario), 
                 Updates.set("contrasena", contrasenaEncriptada)
             );
-            System.out.println("Contraseña actualizada para: " + usuario);
+            logger.info("Contraseña actualizada para: " + usuario);
             return true;
         } catch (Exception e) {
-            System.err.println("Error cambiando contraseña: " + e.getMessage());
+            logger.error("Error cambiando contraseña: " + e.getMessage());
             return false;
         }
     }
@@ -114,7 +119,7 @@ public class DAOUsuario {
         try {
             Document doc = coleccion.find(Filters.eq("usuario", usuario)).first();
             if (doc == null) {
-                System.err.println("Usuario no encontrado: " + usuario);
+                logger.error("Usuario no encontrado: " + usuario);
                 return false;
             }
              
@@ -127,23 +132,30 @@ public class DAOUsuario {
             );
              
             coleccion.updateOne(Filters.eq("usuario", usuario), actualizaciones);
-            System.out.println("Usuario bloqueado: " + usuario);
+            logger.info("Usuario bloqueado: " + usuario);
             return true;
              
         } catch (Exception e) {
-            System.err.println("Error bloqueando usuario: " + e.getMessage());
+            logger.error("Error bloqueando usuario: " + e.getMessage());
             return false;
         }
     }
     
     public Usuario buscarUsuarioPorNombre(String usuario) {
-        try {
+    	if (usuario == null || usuario.trim().isEmpty()) {
+    		logger.error("⚠️ Nombre de usuario nulo o vacío");
+    		return null;
+    	}
+    	
+    	 usuario = usuario.replaceAll("[<>\"'&;]", "");
+    	
+    	try {
             Document doc = coleccion.find(Filters.eq("usuario", usuario)).first();
             if (doc != null) {
                 return documentoAUsuario(doc);
             }
         } catch (Exception e) {
-            System.err.println("Error buscando usuario: " + e.getMessage());
+            logger.error("Error buscando usuario: " + e.getMessage());
         }
         return null;
     }
@@ -161,7 +173,7 @@ public class DAOUsuario {
             coleccion.updateOne(Filters.eq("usuario", usuario), actualizaciones);
             return true;
         } catch (Exception e) {
-            System.err.println("❌ Error actualizando usuario: " + e.getMessage());
+            logger.error("❌ Error actualizando usuario: " + e.getMessage());
             return false;
         }
     }
@@ -171,7 +183,7 @@ public class DAOUsuario {
             coleccion.deleteOne(Filters.eq("usuario", usuario));
             return true;
         } catch (Exception e) {
-            System.err.println("❌ Error eliminando usuario: " + e.getMessage());
+            logger.error("❌ Error eliminando usuario: " + e.getMessage());
             return false;
         }
     }
@@ -190,12 +202,17 @@ public class DAOUsuario {
             }
             return false;
         } catch (Exception e) {
-            System.err.println("❌ Error verificando estado de bloqueo: " + e.getMessage());
+            logger.error("❌ Error verificando estado de bloqueo: " + e.getMessage());
             return false;
         }
     }
     private Usuario documentoAUsuario(Document doc) {
-        try {
+    	if (doc == null) {
+            logger.error("⚠️ Documento nulo en documentoAUsuario");
+            return null;
+        }
+    	
+    	try {
             // Crear usuario con datos básicos
             Usuario usuario = new Usuario(
                 doc.getString("usuario"),
@@ -235,16 +252,15 @@ public class DAOUsuario {
                     String fechaBloqueo = doc.getString("fechaBloqueo");
                     usuario.setFechaBloqueo(fechaBloqueo);
                 } catch (Exception e) {
-                    System.err.println("⚠️  Error obteniendo fechaBloqueo para usuario " + usuario.getUsuario() + ": " + e.getMessage());
+                    logger.error("⚠️  Error obteniendo fechaBloqueo para usuario " + usuario.getUsuario() + ": " + e.getMessage());
                     usuario.setFechaBloqueo(null);
                 }
             }
             
             return usuario;
         } catch (Exception e) {
-            System.err.println("❌ Error grave convirtiendo documento a Usuario: " + e.getMessage());
-            System.err.println("📄 Documento: " + doc.toJson());
-            e.printStackTrace();
+            logger.error("❌ Error grave convirtiendo documento a Usuario: " + e.getMessage());
+            logger.error("📄 Documento: " + doc.toJson());
             return null;
         }
     }
@@ -252,7 +268,7 @@ public class DAOUsuario {
         try {
             Document doc = coleccion.find(Filters.eq("usuario", usuario)).first();
             if (doc == null) {
-                System.err.println("❌ Usuario no encontrado: " + usuario);
+                logger.error("❌ Usuario no encontrado: " + usuario);
                 return false;
             }
             
@@ -264,11 +280,11 @@ public class DAOUsuario {
             
             // ELIMINAR todo el debugging de UpdateResult
             coleccion.updateOne(Filters.eq("usuario", usuario), actualizaciones);
-            System.out.println("Usuario desbloqueado: " + usuario);
+            logger.info("Usuario desbloqueado: " + usuario);
             return true;
             
         } catch (Exception e) {
-            System.err.println("❌ Error desbloqueando usuario: " + e.getMessage());
+            logger.error("❌ Error desbloqueando usuario: " + e.getMessage());
             return false;
         }
     }

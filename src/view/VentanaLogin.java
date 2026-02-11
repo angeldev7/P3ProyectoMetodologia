@@ -82,8 +82,8 @@ public class VentanaLogin extends JFrame {
     }
 
     private void intentarLogin() {
-        String usuario = txtUsuario.getText().trim();
-        String contrasena = new String(txtContrasena.getPassword());
+    	String usuario = sanitizarEntrada(txtUsuario.getText().trim());
+    	String contrasena = new String(txtContrasena.getPassword());
         
         if (usuario.isEmpty() || contrasena.isEmpty()) {
             mostrarError("Por favor ingrese usuario y contraseña");
@@ -285,5 +285,12 @@ public class VentanaLogin extends JFrame {
         boton.setBorder(new LineBorder(colorFondo.darker(), 2));
         boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return boton;
+    }
+    
+    private String sanitizarEntrada(String entrada) {
+        if (entrada == null) return "";
+        
+        // Remover caracteres especiales peligrosos
+        return entrada.replaceAll("[<>\"';&=]", "");
     }
 }
