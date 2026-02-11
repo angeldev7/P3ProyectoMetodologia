@@ -22,6 +22,11 @@ public class DAORol {
     public DAORol() {
         this.coleccion = ConexionBaseDatos.getColeccion("roles");
     }
+
+    // Constructor para inyección de dependencias (testing)
+    public DAORol(MongoCollection<Document> coleccion) {
+        this.coleccion = coleccion;
+    }
     
     public boolean crearRol(Rol rol) {
         try {

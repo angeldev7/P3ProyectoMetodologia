@@ -25,6 +25,11 @@ public class ProductoDAO {
         this.coleccionProductos = ConexionBaseDatos.getColeccion("productos");
         crearIndices();
     }
+
+    // Constructor para inyección de dependencias (testing)
+    public ProductoDAO(MongoCollection<Document> coleccionProductos) {
+        this.coleccionProductos = coleccionProductos;
+    }
     
     private void crearIndices() {
         try {
@@ -49,7 +54,10 @@ public class ProductoDAO {
                 .append("descripcion", descripcion)
                 .append("stock", producto.getStock())
                 .append("precio", producto.getPrecio())
-                .append("stockMinimo", producto.getStockMinimo());
+                .append("stockMinimo", producto.getStockMinimo())
+                .append("pasillo", producto.getPasillo())
+                .append("estante", producto.getEstante())
+                .append("posicion", producto.getPosicion());
             
             coleccionProductos.insertOne(docProducto);
             logger.info("Producto guardado: " + codigo);
@@ -78,6 +86,9 @@ public class ProductoDAO {
                     .append("stock", producto.getStock())
                     .append("precio", producto.getPrecio())
                     .append("stockMinimo", producto.getStockMinimo())
+                    .append("pasillo", producto.getPasillo())
+                    .append("estante", producto.getEstante())
+                    .append("posicion", producto.getPosicion())
             );
             
             coleccionProductos.updateOne(filtro, actualizacion);
@@ -132,10 +143,10 @@ public class ProductoDAO {
                 while (cursor.hasNext()) {
                     productos.add(convertirDocumentAProducto(cursor.next()));
                 }
-                logger.info("✅ Productos con stock obtenidos: " + productos.size());
+                logger.info("Productos con stock obtenidos: " + productos.size());
             }
         } catch (Exception e) {
-            logger.error("❌ Error al obtener productos con stock: " + e.getMessage());
+            logger.error("Error al obtener productos con stock: " + e.getMessage());
         }
         return productos;
     }
@@ -147,9 +158,9 @@ public class ProductoDAO {
                 new Document("stock", nuevoStock));
             
             coleccionProductos.updateOne(filtro, actualizacion);
-            logger.info("✅ Stock actualizado en MongoDB: " + codigo + " -> " + nuevoStock);
+            logger.info("Stock actualizado en MongoDB: " + codigo + " -> " + nuevoStock);
         } catch (Exception e) {
-            logger.error("❌ Error al actualizar stock en MongoDB: " + e.getMessage());
+            logger.error("Error al actualizar stock en MongoDB: " + e.getMessage());
         }
     }
     
@@ -158,7 +169,7 @@ public class ProductoDAO {
             Bson filtro = Filters.eq("codigo", codigo);
             return coleccionProductos.countDocuments(filtro) > 0;
         } catch (Exception e) {
-            logger.error("❌ Error al verificar existencia de producto: " + e.getMessage());
+            logger.error("Error al verificar existencia de producto: " + e.getMessage());
             return false;
         }
     }
@@ -167,20 +178,70 @@ public class ProductoDAO {
         try {
             return coleccionProductos.countDocuments();
         } catch (Exception e) {
-            logger.error("❌ Error al contar productos: " + e.getMessage());
+            logger.error("Error al contar productos: " + e.getMessage());
             return 0;
         }
     }
     
     private Producto convertirDocumentAProducto(Document doc) {
+        String pasillo = doc.getString("pasillo");
+        String estante = doc.getString("estante");
+        String posicion = doc.getString("posicion");
         return new Producto(
             doc.getString("codigo"),
             doc.getString("nombre"),
             doc.getString("descripcion"),
             doc.getInteger("stock"),
             doc.getDouble("precio"),
-            doc.getInteger("stockMinimo")
+            doc.getInteger("stockMinimo"),
+            pasillo != null ? pasillo : "",
+            estante != null ? estante : "",
+            posicion != null ? posicion : ""
         );
+    }
+
+    public List<Producto> buscarProductosPorUbicacion(String pasillo, String estante, String posicion) {
+        List<Producto> productos = new ArrayList<>();
+        try {
+            Document filtro = new Document();
+            if (pasillo != null && !pasillo.isEmpty()) {
+                filtro.append("pasillo", pasillo);
+            }
+            if (estante != null && !estante.isEmpty()) {
+                filtro.append("estante", estante);
+            }
+            if (posicion != null && !posicion.isEmpty()) {
+                filtro.append("posicion", posicion);
+            }
+
+            try (MongoCursor<Document> cursor = coleccionProductos.find(filtro).iterator()) {
+                while (cursor.hasNext()) {
+                    productos.add(convertirDocumentAProducto(cursor.next()));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error al buscar productos por ubicación: " + e.getMessage());
+        }
+        return productos;
+    }
+
+    public List<Producto> obtenerProductosSinUbicacion() {
+        List<Producto> productos = new ArrayList<>();
+        try {
+            Bson filtro = Filters.or(
+                Filters.exists("pasillo", false),
+                Filters.eq("pasillo", null),
+                Filters.eq("pasillo", "")
+            );
+            try (MongoCursor<Document> cursor = coleccionProductos.find(filtro).iterator()) {
+                while (cursor.hasNext()) {
+                    productos.add(convertirDocumentAProducto(cursor.next()));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error al obtener productos sin ubicación: " + e.getMessage());
+        }
+        return productos;
     }
     
     // Método para verificar la conexión

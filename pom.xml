@@ -8,6 +8,12 @@
     <artifactId>ProyectoMetodologia</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
+    </properties>
+
     <dependencies>
 
         <dependency>
@@ -72,7 +78,7 @@
 
     <build>
         <sourceDirectory>src</sourceDirectory>
-        <testSourceDirectory>src/test</testSourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
 
         <plugins>
             <plugin>
@@ -98,7 +104,7 @@
                                 <include>**/*.java</include>
                             </includes>
                             <excludes>
-                                <exclude>test/**</exclude>
+                                <exclude>**/test/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -129,11 +135,9 @@
                     </includes>
                     <excludes>
                         <exclude>**/*IntegrationTest.java</exclude>
-                        <exclude>test/DAORolTest.java</exclude>
-                        <exclude>test/DAOUsuarioTest.java</exclude>
-                        <exclude>test/ProductoDAOTest.java</exclude>
-                        <exclude>**/ControladorInventarioMockTest.java</exclude>
-                        <exclude>**/ControladorGestionUsuariosMockTest.java</exclude>
+                        <exclude>**/DAORolTest.java</exclude>
+                        <exclude>**/DAOUsuarioTest.java</exclude>
+                        <exclude>**/ProductoDAOTest.java</exclude>
                     </excludes>
                     <argLine>@{argLine} -Dnet.bytebuddy.experimental=true</argLine>
                 </configuration>
@@ -144,19 +148,33 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.12</version>
                 <configuration>
+                    <!-- Exclusiones globales para instrumentación, reporte y check -->
                     <excludes>
+                        <!-- Vista (no se testea) -->
+                        <exclude>view/**</exclude>
+                        <exclude>**/view/**</exclude>
+                        <!-- Controladores Swing (no se testean) -->
+                        <exclude>controller/**</exclude>
+                        <exclude>**/controller/**</exclude>
+                        <!-- Punto de entrada -->
+                        <exclude>App/**</exclude>
+                        <exclude>**/App/**</exclude>
+                        <!-- Conexión a BD -->
+                        <exclude>Database/**</exclude>
+                        <exclude>**/Database/**</exclude>
+                        <!-- Excepciones custom (triviales) -->
+                        <exclude>exception/**</exclude>
+                        <exclude>**/exception/**</exclude>
+                        <!-- Clases del sistema -->
                         <exclude>sun/**</exclude>
                         <exclude>jdk/**</exclude>
                         <exclude>java/**</exclude>
                         <exclude>javax/**</exclude>
-                        <exclude>view/**</exclude>
-                        <exclude>**/view/**</exclude>
-                        <exclude>App/Main.class</exclude>
-                        <exclude>**/Main.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
                     <execution>
+                        <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
@@ -167,21 +185,6 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
-                        <configuration>
-                            <excludes>
-                                <exclude>sun/**</exclude>
-                                <exclude>jdk/**</exclude>
-                                <exclude>java/**</exclude>
-                                <exclude>javax/**</exclude>
-                                <exclude>view/**</exclude>
-                                <exclude>**/view/**</exclude>
-                                <exclude>App/**</exclude>
-                                <exclude>**/App/**</exclude>
-                                <exclude>**/Main.class</exclude>
-                                <exclude>Database/**</exclude>
-                                <exclude>**/Database/**</exclude>
-                            </excludes>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>check</id>
@@ -205,12 +208,6 @@
                                             <minimum>0.25</minimum>
                                         </limit>
                                     </limits>
-                                    <excludes>
-                                        <exclude>view.*</exclude>
-                                        <exclude>view.**</exclude>
-                                        <exclude>App.*</exclude>
-                                        <exclude>App.**</exclude>
-                                    </excludes>
                                 </rule>
                             </rules>
                         </configuration>

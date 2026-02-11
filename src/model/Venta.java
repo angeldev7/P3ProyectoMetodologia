@@ -28,4 +28,11 @@ public class Venta {
     public double getPrecioUnitario() { return precioUnitario; }
     public double getTotal() { return total; }
     public String getFecha() { return fecha; }
+
+    @Override
+    public String toString() {
+        return "Venta{codigo=" + codigoProducto + ", producto=" + nombreProducto + 
+               ", cantidad=" + cantidad + ", precioUnitario=" + precioUnitario + 
+               ", total=" + total + ", fecha=" + fecha + "}";
+    }
 }

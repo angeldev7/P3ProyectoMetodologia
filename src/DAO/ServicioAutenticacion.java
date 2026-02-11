@@ -26,6 +26,13 @@ public class ServicioAutenticacion {
         inicializarAdminPorDefecto();
     }
 
+    // Constructor para inyección de dependencias (testing)
+    public ServicioAutenticacion(DAOUsuario daoUsuario, DAORol daoRol, AccesoSistemaDAO accesoDAO) {
+        this.daoUsuario = daoUsuario;
+        this.daoRol = daoRol;
+        this.accesoDAO = accesoDAO;
+    }
+
     private void inicializarAdminPorDefecto() {
         Usuario admin = daoUsuario.buscarUsuarioPorNombre("admin");
         if (admin == null) {
@@ -65,7 +72,7 @@ public class ServicioAutenticacion {
         
         // Validar entrada
         if (usuario == null || contrasena == null) {
-            logger.error("⚠️ Usuario o contraseña nulos");
+            logger.error("Usuario o contrasena nulos");
             return false;
         }
         
@@ -87,7 +94,7 @@ public class ServicioAutenticacion {
         String rolUsuario = user.getRol();
         if (rolUsuario == null) {
             rolUsuario = "SIN_ROL";
-            logger.error("⚠️ Usuario " + usuario + " no tiene rol asignado");
+            logger.error("Usuario " + usuario + " no tiene rol asignado");
         }
         
         if (user.isBloqueado()) {

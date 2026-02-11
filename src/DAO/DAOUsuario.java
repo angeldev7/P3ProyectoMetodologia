@@ -26,6 +26,11 @@ public class DAOUsuario {
     public DAOUsuario() {
         this.coleccion = ConexionBaseDatos.getColeccion("usuarios");
     }
+
+    // Constructor para inyección de dependencias (testing)
+    public DAOUsuario(MongoCollection<Document> coleccion) {
+        this.coleccion = coleccion;
+    }
     
     public List<Usuario> obtenerTodosUsuarios() {
         List<Usuario> usuarios = new ArrayList<>();
@@ -138,7 +143,7 @@ public class DAOUsuario {
     
     public Usuario buscarUsuarioPorNombre(String usuario) {
     	if (usuario == null || usuario.trim().isEmpty()) {
-    		logger.error("⚠️ Nombre de usuario nulo o vacío");
+    		logger.error("Nombre de usuario nulo o vacio");
     		return null;
     	}
     	
@@ -168,7 +173,7 @@ public class DAOUsuario {
             coleccion.updateOne(Filters.eq("usuario", usuario), actualizaciones);
             return true;
         } catch (Exception e) {
-            logger.error("❌ Error actualizando usuario: " + e.getMessage());
+            logger.error("Error actualizando usuario: " + e.getMessage());
             return false;
         }
     }
@@ -178,7 +183,7 @@ public class DAOUsuario {
             coleccion.deleteOne(Filters.eq("usuario", usuario));
             return true;
         } catch (Exception e) {
-            logger.error("❌ Error eliminando usuario: " + e.getMessage());
+            logger.error("Error eliminando usuario: " + e.getMessage());
             return false;
         }
     }
@@ -197,13 +202,13 @@ public class DAOUsuario {
             }
             return false;
         } catch (Exception e) {
-            logger.error("❌ Error verificando estado de bloqueo: " + e.getMessage());
+            logger.error("Error verificando estado de bloqueo: " + e.getMessage());
             return false;
         }
     }
     private Usuario documentoAUsuario(Document doc) {
     	if (doc == null) {
-            logger.error("⚠️ Documento nulo en documentoAUsuario");
+            logger.error("Documento nulo en documentoAUsuario");
             return null;
         }
     	
@@ -247,15 +252,15 @@ public class DAOUsuario {
                     String fechaBloqueo = doc.getString("fechaBloqueo");
                     usuario.setFechaBloqueo(fechaBloqueo);
                 } catch (Exception e) {
-                    logger.error("⚠️  Error obteniendo fechaBloqueo para usuario " + usuario.getUsuario() + ": " + e.getMessage());
+                    logger.error("Error obteniendo fechaBloqueo para usuario " + usuario.getUsuario() + ": " + e.getMessage());
                     usuario.setFechaBloqueo(null);
                 }
             }
             
             return usuario;
         } catch (Exception e) {
-            logger.error("❌ Error grave convirtiendo documento a Usuario: " + e.getMessage());
-            logger.error("📄 Documento: " + doc.toJson());
+            logger.error("Error grave convirtiendo documento a Usuario: " + e.getMessage());
+            logger.error("Documento: " + doc.toJson());
             return null;
         }
     }
@@ -263,7 +268,7 @@ public class DAOUsuario {
         try {
             Document doc = coleccion.find(Filters.eq("usuario", usuario)).first();
             if (doc == null) {
-                logger.error("❌ Usuario no encontrado: " + usuario);
+                logger.error("Usuario no encontrado: " + usuario);
                 return false;
             }
             
@@ -279,7 +284,7 @@ public class DAOUsuario {
             return true;
             
         } catch (Exception e) {
-            logger.error("❌ Error desbloqueando usuario: " + e.getMessage());
+            logger.error("Error desbloqueando usuario: " + e.getMessage());
             return false;
         }
     }

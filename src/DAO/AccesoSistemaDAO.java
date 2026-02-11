@@ -21,6 +21,11 @@ public class AccesoSistemaDAO {
         this.coleccionAccesos = ConexionBaseDatos.getColeccion("historial_accesos");
         crearIndices();
     }
+
+    // Constructor para inyección de dependencias (testing)
+    public AccesoSistemaDAO(MongoCollection<Document> coleccionAccesos) {
+        this.coleccionAccesos = coleccionAccesos;
+    }
     
     private void crearIndices() {
         try {
@@ -34,7 +39,7 @@ public class AccesoSistemaDAO {
             
             logger.info("Índices creados para historial de accesos");
         } catch (Exception e) {
-            logger.error("❌ Error al crear índices de accesos: " + e.getMessage());
+            logger.error("Error al crear indices de accesos: " + e.getMessage());
         }
     }
     
@@ -55,7 +60,7 @@ public class AccesoSistemaDAO {
             coleccionAccesos.insertOne(docAcceso);
             logger.info("Registro de acceso guardado: " + usuario + " - " + acceso.getTipoAcceso());
         } catch (Exception e) {
-            logger.error("❌ Error al registrar acceso: " + e.getMessage());
+            logger.error("Error al registrar acceso: " + e.getMessage());
         }
     }
 
@@ -71,9 +76,9 @@ public class AccesoSistemaDAO {
             while (cursor.hasNext()) {
                 accesos.add(convertirDocumentAAcceso(cursor.next()));
             }
-            logger.info("✅ Historial de accesos obtenido: " + accesos.size() + " registros");
+            logger.info("Historial de accesos obtenido: " + accesos.size() + " registros");
         } catch (Exception e) {
-            logger.error("❌ Error al obtener historial de accesos: " + e.getMessage());
+            logger.error("Error al obtener historial de accesos: " + e.getMessage());
         }
         return accesos;
     }
@@ -88,7 +93,7 @@ public class AccesoSistemaDAO {
                 accesos.add(convertirDocumentAAcceso(doc));
             }
         } catch (Exception e) {
-            logger.error("❌ Error al obtener accesos por usuario: " + e.getMessage());
+            logger.error("Error al obtener accesos por usuario: " + e.getMessage());
         }
         return accesos;
     }
@@ -103,7 +108,7 @@ public class AccesoSistemaDAO {
                 accesos.add(convertirDocumentAAcceso(doc));
             }
         } catch (Exception e) {
-            logger.error("❌ Error al obtener accesos exitosos: " + e.getMessage());
+            logger.error("Error al obtener accesos exitosos: " + e.getMessage());
         }
         return accesos;
     }
@@ -118,7 +123,7 @@ public class AccesoSistemaDAO {
                 accesos.add(convertirDocumentAAcceso(doc));
             }
         } catch (Exception e) {
-            logger.error("❌ Error al obtener accesos fallidos: " + e.getMessage());
+            logger.error("Error al obtener accesos fallidos: " + e.getMessage());
         }
         return accesos;
     }
@@ -128,7 +133,7 @@ public class AccesoSistemaDAO {
         
         // Validar formato de fecha (yyyy-MM-dd)
         if (fecha == null || !fecha.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            logger.error("❌ Formato de fecha inválido: " + fecha);
+            logger.error("Formato de fecha invalido: " + fecha);
             return accesos;
         }
         
@@ -140,7 +145,7 @@ public class AccesoSistemaDAO {
                 accesos.add(convertirDocumentAAcceso(doc));
             }
         } catch (Exception e) {
-            logger.error("❌ Error al obtener accesos por fecha: " + e.getMessage());
+            logger.error("Error al obtener accesos por fecha: " + e.getMessage());
         }
         return accesos;
     }
@@ -149,7 +154,7 @@ public class AccesoSistemaDAO {
         try {
             return coleccionAccesos.countDocuments();
         } catch (Exception e) {
-            logger.error("❌ Error al contar accesos: " + e.getMessage());
+            logger.error("Error al contar accesos: " + e.getMessage());
             return 0;
         }
     }
@@ -158,7 +163,7 @@ public class AccesoSistemaDAO {
         try {
             return coleccionAccesos.countDocuments(Filters.eq("tipoAcceso", "EXITOSO"));
         } catch (Exception e) {
-            logger.error("❌ Error al contar accesos exitosos: " + e.getMessage());
+            logger.error("Error al contar accesos exitosos: " + e.getMessage());
             return 0;
         }
     }
@@ -167,7 +172,7 @@ public class AccesoSistemaDAO {
         try {
             return coleccionAccesos.countDocuments(Filters.eq("tipoAcceso", "FALLIDO"));
         } catch (Exception e) {
-            logger.error("❌ Error al contar accesos fallidos: " + e.getMessage());
+            logger.error("Error al contar accesos fallidos: " + e.getMessage());
             return 0;
         }
     }
@@ -188,7 +193,7 @@ public class AccesoSistemaDAO {
         try {
             return true;
         } catch (Exception e) {
-            logger.error("❌ Error al eliminar registros antiguos: " + e.getMessage());
+            logger.error("Error al eliminar registros antiguos: " + e.getMessage());
             return false;
         }
     }

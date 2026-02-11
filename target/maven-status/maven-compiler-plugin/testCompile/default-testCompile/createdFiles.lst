@@ -4,7 +4,6 @@ util\MigradorContrasenasTest.class
 util\PasswordHasherTest.class
 model\InventarioTest.class
 model\ProductoFullTest.class
-controller\ControladorGestionUsuariosMockTest.class
 model\CarritoCompraTest.class
 model\InventarioDAOMockTest.class
 model\ItemCarritoTest.class
@@ -22,7 +21,6 @@ model\UsuarioFullTest.class
 DAO\ProductoDAOMockTest.class
 model\RolFixedTest.class
 test\DAOUsuarioIntegrationTest.class
-controller\ControladorInventarioMockTest.class
 model\VentaTest.class
 DAO\AccesoSistemaDAOMockTest.class
 model\InventarioFullTest.class

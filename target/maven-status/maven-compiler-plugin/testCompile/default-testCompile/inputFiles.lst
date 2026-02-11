@@ -1,7 +1,3 @@
-C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\DAORolIntegrationTest.java
-C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\DAOUsuarioIntegrationTest.java
-C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\controller\ControladorGestionUsuariosMockTest.java
-C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\controller\ControladorInventarioMockTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\DAO\AccesoSistemaDAOMockTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\DAO\DAORolMockTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\DAO\DAOUsuarioMockTest.java
@@ -24,12 +20,14 @@ C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\model\Usuari
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\model\UsuarioTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\model\VentaFullTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\model\VentaTest.java
+C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\test\DAORolIntegrationTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\test\DAORolTest.java
+C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\test\DAOUsuarioIntegrationTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\test\DAOUsuarioTest.java
+C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\test\ProductoDAOIntegrationTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\test\ProductoDAOTest.java
+C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\test\RolTest.java
+C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\test\UsuarioTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\util\MigradorContrasenasTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\util\PasswordHasherFullTest.java
 C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\java\util\PasswordHasherTest.java
-C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\ProductoDAOIntegrationTest.java
-C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\RolTest.java
-C:\Users\asdw\eclipse-workspace\P2ProyectoMetodologia\src\test\UsuarioTest.java

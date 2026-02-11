@@ -10,9 +10,12 @@ public class PasswordHasher {
     // Generar hash de contraseña
     public static String hashPassword(String password) {
         try {
+            if (password == null) {
+                return null;
+            }
             return BCrypt.hashpw(password, BCrypt.gensalt());
         } catch (Exception e) {
-            logger.error("❌ Error hashing password: " + e.getMessage());
+            logger.error("Error hashing password: " + e.getMessage());
             return null;
         }
     }
@@ -25,8 +28,8 @@ public class PasswordHasher {
             }
             return BCrypt.checkpw(password, hashedPassword);
         } catch (Exception e) {
-            logger.error("❌ Error verificando contraseña: " + e.getMessage());
-            logger.error("🔍 Hash proporcionado: " + hashedPassword);
+            logger.error("Error verificando contrasena: " + e.getMessage());
+            logger.error("Hash proporcionado: " + hashedPassword);
             return false;
         }
     }

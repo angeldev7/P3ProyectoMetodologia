@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 public class MigradorContrasenas {
 	private static final Logger logger = LoggerFactory.getLogger(MigradorContrasenas.class);
     public static void migrarUsuariosExistentes() {
-        logger.info("🔄 Iniciando migración de contraseñas...");
+        logger.info("Iniciando migracion de contrasenas...");
         DAOUsuario daoUsuario = new DAOUsuario();
         List<Usuario> usuarios = daoUsuario.obtenerTodosUsuarios();
         
@@ -20,13 +20,13 @@ public class MigradorContrasenas {
         for (Usuario usuario : usuarios) {
             // Si la contraseña NO está hasheada, migrarla
             if (!PasswordHasher.isHashed(usuario.getContrasena())) {
-                logger.info("🔄 Migrando contraseña para: " + usuario.getUsuario());
+                logger.info("Migrando contrasena para: " + usuario.getUsuario());
                 if (daoUsuario.cambiarContrasena(usuario.getUsuario(), usuario.getContrasena())) {
                     migrados++;
                 }
             }
         }
         
-        logger.info("✅ Migración completada: " + migrados + " usuarios migrados");
+        logger.info("Migracion completada: " + migrados + " usuarios migrados");
     }
 }

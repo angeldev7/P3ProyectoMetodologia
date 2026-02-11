@@ -1,4 +1,4 @@
-name: CI Pipeline con Pruebas y Coverage
+name: CI Pipeline - Pruebas y Coverage
 
 on:
   push:
@@ -12,82 +12,70 @@ permissions:
   pull-requests: write
 
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up JDK 21
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Configurar JDK 21
       uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
-        
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
-        
-    - name: Run tests
-      run: mvn clean test -Dmaven.test.failure.ignore=true
-      
-    - name: Generate test report
+        cache: maven
+
+    - name: Compilar y ejecutar tests con coverage
+      run: mvn clean verify -B -Dnet.bytebuddy.experimental=true
+
+    - name: Publicar reporte de tests
       uses: dorny/test-reporter@v1
       if: always()
       with:
-        name: Maven Tests
+        name: Resultados de Tests
         path: target/surefire-reports/*.xml
         reporter: java-junit
-        
-    - name: Generate JaCoCo Badge
+
+    - name: Generar badge de cobertura
       id: jacoco
       uses: cicirello/jacoco-badge-generator@v2
       if: always()
       with:
         generate-branches-badge: true
         jacoco-csv-file: target/site/jacoco/jacoco.csv
-        
-    - name: Log coverage percentage
+
+    - name: Resumen de cobertura
       if: always()
       run: |
-        echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
-        echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
-        
-    - name: Upload coverage reports to Codecov
+        echo "### 📊 Reporte de Cobertura" >> $GITHUB_STEP_SUMMARY
+        echo "| Métrica | Valor |" >> $GITHUB_STEP_SUMMARY
+        echo "|---------|-------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Cobertura de líneas | ${{ steps.jacoco.outputs.coverage }}% |" >> $GITHUB_STEP_SUMMARY
+        echo "| Cobertura de ramas | ${{ steps.jacoco.outputs.branches }}% |" >> $GITHUB_STEP_SUMMARY
+
+    - name: Subir cobertura a Codecov
       if: always()
       uses: codecov/codecov-action@v4
       with:
         file: target/site/jacoco/jacoco.xml
-        
-    - name: Commit and push the badge (if it changed)
-      if: always()
+        fail_ci_if_error: false
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Commit badge de cobertura
+      if: github.event_name == 'push' && always()
       uses: EndBug/add-and-commit@v9
       with:
         default_author: github_actions
-        message: 'Update coverage badge'
+        message: 'ci: actualizar badge de cobertura [skip ci]'
         add: '*.svg'
-        
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        
-    - name: Build with Maven
-      run: mvn clean compile package -DskipTests
-      
-    - name: Upload build artifacts
+      continue-on-error: true
+
+    - name: Subir artefacto JAR
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: ferreteria-jar
         path: target/*.jar
+        retention-days: 30

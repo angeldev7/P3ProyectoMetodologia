@@ -20,6 +20,14 @@ public class InventarioDAO {
         this.productoDAO = new ProductoDAO();
         cargarProductosDesdeBD();
     }
+
+    // Constructor para inyección de dependencias (testing)
+    public InventarioDAO(ProductoDAO productoDAO) {
+        this.productos = new ArrayList<>();
+        this.ventas = new ArrayList<>();
+        this.productoDAO = productoDAO;
+        cargarProductosDesdeBD();
+    }
     
     private void cargarProductosDesdeBD() {
         try {
@@ -38,10 +46,10 @@ public class InventarioDAO {
     
     private void inicializarDatosEjemplo() {
         Producto[] productosEjemplo = {
-            new Producto("P001", "Martillo", "Martillo de construcción de acero", 15, 12.50, 5),
-            new Producto("P002", "Juego de Destornilladores", "Juego de 6 destornilladores", 8, 25.00, 3),
-            new Producto("P003", "Clavos 2 pulgadas", "Caja de 100 clavos de 2 pulgadas", 20, 8.75, 10),
-            new Producto("P004", "Brocha de Pintura", "Brocha de pintura de 3 pulgadas", 12, 15.30, 4)
+            new Producto("P001", "Martillo", "Martillo de construcción de acero", 15, 12.50, 5, "A", "1", "1"),
+            new Producto("P002", "Juego de Destornilladores", "Juego de 6 destornilladores", 8, 25.00, 3, "A", "1", "2"),
+            new Producto("P003", "Clavos 2 pulgadas", "Caja de 100 clavos de 2 pulgadas", 20, 8.75, 10, "B", "2", "1"),
+            new Producto("P004", "Brocha de Pintura", "Brocha de pintura de 3 pulgadas", 12, 15.30, 4, "B", "2", "2")
         };
         
         for (Producto producto : productosEjemplo) {
@@ -172,5 +180,48 @@ public class InventarioDAO {
     // Nuevo método para obtener productos con stock para ventas
     public List<Producto> obtenerProductosConStockParaVenta() {
         return productoDAO.obtenerProductosConStock();
+    }
+
+    public List<Producto> buscarProductosPorUbicacion(String pasillo, String estante, String posicion) {
+        List<Producto> resultado = new ArrayList<>();
+        for (Producto p : productos) {
+            boolean coincide = true;
+            if (pasillo != null && !pasillo.isEmpty() && !pasillo.equals(p.getPasillo())) {
+                coincide = false;
+            }
+            if (estante != null && !estante.isEmpty() && !estante.equals(p.getEstante())) {
+                coincide = false;
+            }
+            if (posicion != null && !posicion.isEmpty() && !posicion.equals(p.getPosicion())) {
+                coincide = false;
+            }
+            if (coincide) {
+                resultado.add(p);
+            }
+        }
+        return resultado;
+    }
+
+    public List<Producto> obtenerProductosSinUbicacion() {
+        List<Producto> resultado = new ArrayList<>();
+        for (Producto p : productos) {
+            if (!p.tieneUbicacion()) {
+                resultado.add(p);
+            }
+        }
+        return resultado;
+    }
+
+    public List<String> obtenerUbicacionesUnicas() {
+        List<String> ubicaciones = new ArrayList<>();
+        for (Producto p : productos) {
+            if (p.tieneUbicacion()) {
+                String ubicacion = p.getUbicacionCompleta();
+                if (!ubicaciones.contains(ubicacion)) {
+                    ubicaciones.add(ubicacion);
+                }
+            }
+        }
+        return ubicaciones;
     }
 }
