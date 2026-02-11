@@ -1,0 +1,10 @@
+# Archivo de ejemplo para la configuración de la base de datos MongoDB Atlas
+# Copia este archivo como config.properties y reemplaza los valores por los reales
+
+# URI de conexión a MongoDB Atlas (reemplaza <usuario> y <contraseña> por tus datos)
+mongodb.uri=mongodb+srv://usuario:contraseña@cluster0.mongodb.net/?retryWrites=true&w=majority
+
+# Nombre de la base de datos
+database.name=nombreDeTuBaseDeDatos
+
+# Otros parámetros de configuración pueden ir aquí
