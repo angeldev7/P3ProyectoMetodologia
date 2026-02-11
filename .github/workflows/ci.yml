@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main, develop, angel ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, Test ]
 
 permissions:
   checks: write
