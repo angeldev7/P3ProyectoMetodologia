@@ -18,7 +18,7 @@ dependency-reduced-pom.xml
 build_output.txt
 
 # Logging config (local)
-logback.xml
+!logback.xml
 
 # OS files
 .DS_Store
