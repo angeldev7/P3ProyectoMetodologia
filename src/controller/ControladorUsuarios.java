@@ -1,4 +1,3 @@
-// Controller/ControladorGestionUsuarios.java
 package controller;
 
 import view.PanelGestionUsuarios;
@@ -7,92 +6,62 @@ import model.Rol;
 import DAO.DAOUsuario;
 import DAO.DAORol;
 import javax.swing.JOptionPane;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
-public class ControladorGestionUsuarios implements ActionListener {
-	private static final Logger logger = LoggerFactory.getLogger(ControladorGestionUsuarios.class);
+public class ControladorUsuarios implements ActionListener {
+    private static final Logger logger = LoggerFactory.getLogger(ControladorUsuarios.class);
     private PanelGestionUsuarios vista;
     private DAOUsuario daoUsuario;
-    private DAORol daoRol;
+    private DAORol daoRol;  // Agregado para manejar roles
     private static final String USUARIO_NO_SELECCIONADO = "Usuario No Seleccionado";
-    private static final String ROL_NO_SELECCIONADO = "Rol No Seleccionado";
     
-    public ControladorGestionUsuarios(PanelGestionUsuarios vista) {
+    public ControladorUsuarios(PanelGestionUsuarios vista, DAOUsuario daoUsuario) {
         this.vista = vista;
-        this.daoUsuario = new DAOUsuario();
-        this.daoRol = new DAORol();
+        this.daoUsuario = daoUsuario;
+        this.daoRol = new DAORol(); // Inicializamos DAORol
         
-        // Registrar listeners
+        // Registrar listeners específicos de usuarios
         this.vista.btnGuardarUsuario.addActionListener(this);
         this.vista.btnNuevoUsuario.addActionListener(this);
         this.vista.btnEliminarUsuario.addActionListener(this);
         this.vista.btnResetearContrasena.addActionListener(this);
-        this.vista.btnGuardarRol.addActionListener(this);
-        this.vista.btnNuevoRol.addActionListener(this);
         this.vista.btnBloquearUsuario.addActionListener(this);
         this.vista.btnDesbloquearUsuario.addActionListener(this);
-        this.vista.btnEditarRol.addActionListener(this);
-        this.vista.btnEliminarRol.addActionListener(this);
         
-        vista.tablaRoles.addMouseListener(new MouseAdapter() {
-        	
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) { // Doble clic
-                    editarRol();
+        // Agregar listener de doble clic
+        if (vista.tablaUsuarios != null) {
+            vista.tablaUsuarios.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    if (e.getClickCount() == 2) {
+                        cargarUsuarioSeleccionado();
+                    }
                 }
-            }
-        });
-
-        // Agregar listener de doble clic en la tabla de usuarios
-        vista.tablaUsuarios.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) { // Doble clic
-                    cargarUsuarioSeleccionado();
-                }
-            }
-        });
-        // Cargar datos iniciales desde MongoDB
+            });
+        }
+        
+        // Cargar datos iniciales
         cargarUsuariosDesdeBaseDatos();
-        cargarRolesDesdeBaseDatos();
+    }
+    
+    // Constructor alternativo si necesitas pasar ambos DAOs
+    public ControladorUsuarios(PanelGestionUsuarios vista, DAOUsuario daoUsuario, DAORol daoRol) {
+        this.vista = vista;
+        this.daoUsuario = daoUsuario;
+        this.daoRol = daoRol;
         
+        // ... resto del constructor igual
     }
     
     @Override
     public void actionPerformed(ActionEvent e) {
         Object fuente = e.getSource();
         
-        if (esBotonUsuario(fuente)) {
-            procesarBotonUsuario(fuente);
-        } else if (esBotonRol(fuente)) {
-            procesarBotonRol(fuente);
-        }
-    }
-
-    private boolean esBotonUsuario(Object fuente) {
-        return fuente == vista.btnGuardarUsuario ||
-               fuente == vista.btnNuevoUsuario ||
-               fuente == vista.btnBloquearUsuario ||
-               fuente == vista.btnDesbloquearUsuario ||
-               fuente == vista.btnEliminarUsuario ||
-               fuente == vista.btnResetearContrasena;
-    }
-
-    private boolean esBotonRol(Object fuente) {
-        return fuente == vista.btnGuardarRol ||
-               fuente == vista.btnNuevoRol ||
-               fuente == vista.btnEditarRol ||
-               fuente == vista.btnEliminarRol;
-    }
-
-    private void procesarBotonUsuario(Object fuente) {
         if (fuente == vista.btnGuardarUsuario) {
             guardarUsuario();
         } else if (fuente == vista.btnNuevoUsuario) {
@@ -107,97 +76,88 @@ public class ControladorGestionUsuarios implements ActionListener {
             resetearContrasena();
         }
     }
-
-    private void procesarBotonRol(Object fuente) {
-        if (fuente == vista.btnGuardarRol) {
-            guardarRol();
-        } else if (fuente == vista.btnNuevoRol) {
-            limpiarFormularioRol();
-        } else if (fuente == vista.btnEditarRol) {
-            editarRol();
-        } else if (fuente == vista.btnEliminarRol) {
-            eliminarRol();
-        }
-    }
     
-	private void guardarUsuario() {
-		if (vista == null) {
-			logger.error("⚠️ Vista es nula en guardarUsuario");
-			return;
-		}
+    private void guardarUsuario() {
+        if (vista == null) {
+            logger.error("⚠️ Vista es nula en guardarUsuario");
+            return;
+        }
 
-		String usuario = vista.txtUsuario != null ? vista.txtUsuario.getText().trim() : "";
-		String contrasena = vista.txtContrasena != null ? new String(vista.txtContrasena.getPassword()) : "";
-		String nombreCompleto = vista.txtNombreCompleto != null ? vista.txtNombreCompleto.getText().trim() : "";
-		String rol = vista.cmbRol != null ? (String) vista.cmbRol.getSelectedItem() : null;
+        String usuario = vista.txtUsuario != null ? vista.txtUsuario.getText().trim() : "";
+        String contrasena = vista.txtContrasena != null ? new String(vista.txtContrasena.getPassword()) : "";
+        String nombreCompleto = vista.txtNombreCompleto != null ? vista.txtNombreCompleto.getText().trim() : "";
+        String rol = vista.cmbRol != null ? (String) vista.cmbRol.getSelectedItem() : null;
 
-		if (usuario.isEmpty() || contrasena.isEmpty() || nombreCompleto.isEmpty() || rol == null) {
-			if (vista != null) {
-				JOptionPane.showMessageDialog(vista, "Por favor complete todos los campos requeridos.",
-						"Campos Incompletos", JOptionPane.WARNING_MESSAGE);
-			}
-			return;
-		}
+        if (usuario.isEmpty() || contrasena.isEmpty() || nombreCompleto.isEmpty() || rol == null) {
+            if (vista != null) {
+                JOptionPane.showMessageDialog(vista, "Por favor complete todos los campos requeridos.",
+                        "Campos Incompletos", JOptionPane.WARNING_MESSAGE);
+            }
+            return;
+        }
 
-		Usuario user = new Usuario(usuario, contrasena, nombreCompleto, rol);
+        Usuario user = new Usuario(usuario, contrasena, nombreCompleto, rol);
 
-		// Verificar si el usuario ya existe
-		Usuario usuarioExistente = daoUsuario.buscarUsuarioPorNombre(usuario);
+        // Verificar si el usuario ya existe
+        Usuario usuarioExistente = daoUsuario.buscarUsuarioPorNombre(usuario);
         if (usuarioExistente != null) {
             // Actualizar usuario existente
             if (daoUsuario.actualizarUsuario(usuario, user)) {
                 JOptionPane.showMessageDialog(vista, "Usuario actualizado exitosamente.", "Actualización Exitosa", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(vista, "Error al actualizar el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
             // Crear nuevo usuario
             if (daoUsuario.crearUsuario(user)) {
-                // Actualizar contador de usuarios en el rol
-                daoRol.actualizarContadorUsuarios(rol, 1);
+                // Actualizar contador de usuarios en el rol (si el método existe)
+                actualizarContadorUsuariosEnRol(rol, 1);
                 JOptionPane.showMessageDialog(vista, "Usuario creado exitosamente.", "Creación Exitosa", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(vista, "Error al crear el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
         
         cargarUsuariosDesdeBaseDatos();
-        cargarRolesDesdeBaseDatos();
+        if (vista != null) {
+            vista.actualizarComboRoles(); // LLAMADA DIRECTA
+        }
         limpiarFormularioUsuario();
     }
     
-    private void guardarRol() {
-        String nombreRol = vista.txtNombreRol.getText().trim();
-        String permisos = vista.obtenerPermisosComoString();
-        
-        if (nombreRol.isEmpty()) {
-            JOptionPane.showMessageDialog(vista, "Por favor ingrese un nombre para el rol.", "Nombre Requerido", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
-        Rol rol = new Rol(nombreRol);
-        String[] arrayPermisos = permisos.split(",");
-        for (String perm : arrayPermisos) {
-            if (!perm.trim().isEmpty()) {
-                rol.agregarPermiso(perm.trim());
+    // Método auxiliar para actualizar contador de usuarios en rol
+    private void actualizarContadorUsuariosEnRol(String nombreRol, int cambio) {
+        if (daoRol != null) {
+            try {
+                // Buscar el rol
+                Rol rol = daoRol.buscarRolPorNombre(nombreRol);
+                if (rol != null) {
+                    // Actualizar el contador
+                    int nuevoContador = rol.getContadorUsuarios() + cambio;
+                    rol.setContadorUsuarios(Math.max(0, nuevoContador)); // No permitir negativo
+                    
+                    // Actualizar en la base de datos
+                    daoRol.actualizarRol(nombreRol, rol);
+                }
+            } catch (Exception e) {
+                logger.error("Error al actualizar contador de usuarios en rol: " + e.getMessage());
             }
         }
-        
-        // Verificar si el rol ya existe
-        Rol rolExistente = daoRol.buscarRolPorNombre(nombreRol);
-        if (rolExistente != null) {
-            // Actualizar rol existente
-            if (daoRol.actualizarRol(nombreRol, rol)) {
-                JOptionPane.showMessageDialog(vista, "Rol actualizado exitosamente.", "Actualización Exitosa", JOptionPane.INFORMATION_MESSAGE);
-            }
-        } else {
-            // Crear nuevo rol
-            if (daoRol.crearRol(rol)) {
-                JOptionPane.showMessageDialog(vista, "Rol creado exitosamente.", "Creación Exitosa", JOptionPane.INFORMATION_MESSAGE);
-            }
+    }
+    
+    // Método para cargar roles desde base de datos
+    private void cargarRolesDesdeBaseDatos() {
+        if (vista != null) {
+            vista.actualizarComboRoles();
         }
-        
-        cargarRolesDesdeBaseDatos();
-        limpiarFormularioRol();
     }
     
     private void eliminarUsuario() {
+        if (vista.tablaUsuarios == null || vista.modeloTablaUsuarios == null) {
+            logger.error("Tabla de usuarios no inicializada");
+            return;
+        }
+        
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, "Por favor seleccione un usuario para eliminar.", USUARIO_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
@@ -209,16 +169,16 @@ public class ControladorGestionUsuarios implements ActionListener {
         String rol = sanitizarTexto((String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 2));
         
         int respuesta = JOptionPane.showConfirmDialog(vista, 
-        	    "¿Está seguro de que desea eliminar al usuario '" + sanitizarTexto(usuario) + "'?", 
-        	    "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+            "¿Está seguro de que desea eliminar al usuario '" + sanitizarTexto(usuario) + "'?", 
+            "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
         
         if (respuesta == JOptionPane.YES_OPTION) {
             if (daoUsuario.eliminarUsuario(usuario)) {
                 // Actualizar contador de usuarios en el rol
-                daoRol.actualizarContadorUsuarios(rol, -1);
+                actualizarContadorUsuariosEnRol(rol, -1);
                 JOptionPane.showMessageDialog(vista, "Usuario eliminado exitosamente.", "Eliminación Exitosa", JOptionPane.INFORMATION_MESSAGE);
                 cargarUsuariosDesdeBaseDatos();
-                cargarRolesDesdeBaseDatos();
+                cargarRolesDesdeBaseDatos(); // Llama al método corregido
                 limpiarFormularioUsuario();
             } else {
                 JOptionPane.showMessageDialog(vista, "Error al eliminar el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -226,7 +186,27 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
     }
     
+    public void actualizarComboRoles() {
+        if (vista != null && vista.cmbRol != null && daoRol != null) {
+            vista.cmbRol.removeAllItems();
+            List<Rol> roles = daoRol.obtenerTodosRoles();
+            
+            if (roles != null && !roles.isEmpty()) {
+                for (Rol rol : roles) {
+                    vista.cmbRol.addItem(rol.getNombre());
+                }
+            } else {
+                vista.cmbRol.addItem("Sin roles disponibles");
+            }
+        }
+    }
+    
     private void resetearContrasena() {
+        if (vista.tablaUsuarios == null || vista.modeloTablaUsuarios == null) {
+            logger.error("Tabla de usuarios no inicializada");
+            return;
+        }
+        
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, "Por favor seleccione un usuario para resetear la contraseña.", USUARIO_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
@@ -236,6 +216,7 @@ public class ControladorGestionUsuarios implements ActionListener {
         int filaModelo = vista.tablaUsuarios.convertRowIndexToModel(filaSeleccionada);
         String usuario = sanitizarTexto((String) vista.modeloTablaUsuarios.getValueAt(filaModelo, 0));
         String usuarioSanitizado = sanitizarTexto(usuario);
+        
         String nuevaContrasena = JOptionPane.showInputDialog(vista, 
             "Ingrese la nueva contraseña para " + usuarioSanitizado + ":");
         
@@ -248,42 +229,12 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
     }
     
-
-    private void cargarRolesDesdeBaseDatos() {
-        vista.modeloTablaRoles.setRowCount(0);
-        List<Rol> roles = daoRol.obtenerTodosRoles();
-        for (Rol rol : roles) {
-            Object[] datosFila = {
-                rol.getNombre(),
-                rol.getPermisosComoString(),
-                rol.getContadorUsuarios(),
-                rol.getFechaCreacion()
-            };
-            vista.modeloTablaRoles.addRow(datosFila);
-        }
-        vista.actualizarComboRoles();
-    }
-    
-    private void limpiarFormularioUsuario() {
-        vista.txtUsuario.setText("");
-        vista.txtContrasena.setText("");
-        vista.txtNombreCompleto.setText("");
-        vista.txtBuscar.setText("");
-        vista.tablaUsuarios.clearSelection();
-    }
-    
-    private void limpiarFormularioRol() {
-        vista.txtNombreRol.setText("");
-        vista.chkGestionarProductos.setSelected(false);
-        vista.chkAccederVentas.setSelected(false);
-        vista.chkVerReportes.setSelected(false);
-        vista.chkExportarDatos.setSelected(false);
-        vista.chkGestionarUsuarios.setSelected(false);
-        vista.tablaRoles.clearSelection();
-    }
-    
-
     private void bloquearUsuario() {
+        if (vista.tablaUsuarios == null || vista.modeloTablaUsuarios == null) {
+            logger.error("Tabla de usuarios no inicializada");
+            return;
+        }
+        
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, "Por favor seleccione un usuario para bloquear.", 
@@ -317,9 +268,9 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
         
         int respuesta = JOptionPane.showConfirmDialog(vista, 
-        	    "¿Está seguro de que desea bloquear al usuario '" + sanitizarTexto(usuario) + "'?\n\n" +
-        	    "El usuario no podrá iniciar sesión hasta que sea desbloqueado.", 
-        	    "Confirmar Bloqueo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            "¿Está seguro de que desea bloquear al usuario '" + sanitizarTexto(usuario) + "'?\n\n" +
+            "El usuario no podrá iniciar sesión hasta que sea desbloqueado.", 
+            "Confirmar Bloqueo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         
         if (respuesta == JOptionPane.YES_OPTION) {
             if (daoUsuario.bloquearUsuario(usuario)) {
@@ -336,7 +287,13 @@ public class ControladorGestionUsuarios implements ActionListener {
             }
         }
     }
+    
     private void desbloquearUsuario() {
+        if (vista.tablaUsuarios == null || vista.modeloTablaUsuarios == null) {
+            logger.error("Tabla de usuarios no inicializada");
+            return;
+        }
+        
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
             JOptionPane.showMessageDialog(vista, "Por favor seleccione un usuario para desbloquear.", 
@@ -362,9 +319,9 @@ public class ControladorGestionUsuarios implements ActionListener {
         }
         
         int respuesta = JOptionPane.showConfirmDialog(vista, 
-        	    "¿Está seguro de que desea desbloquear al usuario '" + sanitizarTexto(usuario) + "'?\n\n" +
-        	    "El usuario podrá iniciar sesión nuevamente.", 
-        	    "Confirmar Desbloqueo", JOptionPane.YES_NO_OPTION);
+            "¿Está seguro de que desea desbloquear al usuario '" + sanitizarTexto(usuario) + "'?\n\n" +
+            "El usuario podrá iniciar sesión nuevamente.", 
+            "Confirmar Desbloqueo", JOptionPane.YES_NO_OPTION);
         
         if (respuesta == JOptionPane.YES_OPTION) {
             if (daoUsuario.desbloquearUsuario(usuario)) {
@@ -381,68 +338,26 @@ public class ControladorGestionUsuarios implements ActionListener {
             }
         }
     }
-    private void editarRol() {
-        int filaSeleccionada = vista.tablaRoles.getSelectedRow();
-        if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(vista, "Por favor seleccione un rol para editar.", ROL_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
-            return;
+    
+    private void limpiarFormularioUsuario() {
+        if (vista.txtUsuario != null) {
+            vista.txtUsuario.setText("");
         }
-        
-        int filaModelo = vista.tablaRoles.convertRowIndexToModel(filaSeleccionada);
-        String nombreRol = (String) vista.modeloTablaRoles.getValueAt(filaModelo, 0);
-        String permisos = (String) vista.modeloTablaRoles.getValueAt(filaModelo, 1);
-        
-        // Cargar datos en el formulario
-        vista.txtNombreRol.setText(nombreRol);
-        vista.establecerPermisosDesdeString(permisos);
-        
-        JOptionPane.showMessageDialog(vista, 
-        	    "Rol '" + sanitizarTexto(nombreRol) + "' cargado para edición.\nModifique los permisos y haga clic en 'Guardar Rol' para actualizar.", 
-        	    "Editar Rol", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void eliminarRol() {
-        int filaSeleccionada = vista.tablaRoles.getSelectedRow();
-        if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(vista, "Por favor seleccione un rol para eliminar.", ROL_NO_SELECCIONADO, JOptionPane.WARNING_MESSAGE);
-            return;
+        if (vista.txtContrasena != null) {
+            vista.txtContrasena.setText("");
         }
-        
-        int filaModelo = vista.tablaRoles.convertRowIndexToModel(filaSeleccionada);
-        String nombreRol = (String) vista.modeloTablaRoles.getValueAt(filaModelo, 0);
-        int contadorUsuarios = (int) vista.modeloTablaRoles.getValueAt(filaModelo, 2);
-        
-        // Verificar si hay usuarios con este rol
-        if (contadorUsuarios > 0) {
-        	JOptionPane.showMessageDialog(vista, 
-        		    "❌ No se puede eliminar el rol '" + sanitizarTexto(nombreRol) + "' porque tiene " + contadorUsuarios + " usuario(s) asignado(s).\n\n" +
-        		    "Reasigne los usuarios a otro rol antes de eliminar este.", 
-        		    "Rol en Uso", JOptionPane.ERROR_MESSAGE);
+        if (vista.txtNombreCompleto != null) {
+            vista.txtNombreCompleto.setText("");
         }
-        
-        int respuesta = JOptionPane.showConfirmDialog(vista, 
-        	    "¿Está seguro de que desea eliminar el rol '" + sanitizarTexto(nombreRol) + "'?\n\nEsta acción no se puede deshacer.", 
-        	    "Confirmar Eliminación de Rol", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-        
-        if (respuesta == JOptionPane.YES_OPTION) {
-            if (daoRol.eliminarRol(nombreRol)) {
-                JOptionPane.showMessageDialog(vista, "✅ Rol eliminado exitosamente.", "Eliminación Exitosa", JOptionPane.INFORMATION_MESSAGE);
-                cargarRolesDesdeBaseDatos();
-                limpiarFormularioRol();
-            } else {
-                JOptionPane.showMessageDialog(vista, "❌ Error al eliminar el rol.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+        if (vista.txtBuscar != null) {
+            vista.txtBuscar.setText("");
+        }
+        if (vista.tablaUsuarios != null) {
+            vista.tablaUsuarios.clearSelection();
         }
     }
     
-    private String sanitizarTexto(String texto) {
-        if (texto == null) return "";
-        
-        // Remover caracteres peligrosos para HTML/JavaScript
-        return texto.replaceAll("[<>\"'&;]", "");
-    }
-    
-    private void cargarUsuariosDesdeBaseDatos() {
+    public void cargarUsuariosDesdeBaseDatos() {
         if (vista == null || vista.modeloTablaUsuarios == null) {
             logger.error("⚠️ Vista o modelo de tabla es nulo");
             return;
@@ -490,9 +405,13 @@ public class ControladorGestionUsuarios implements ActionListener {
     }
     
     private void cargarUsuarioSeleccionado() {
+        if (vista.tablaUsuarios == null || vista.modeloTablaUsuarios == null) {
+            return;
+        }
+        
         int filaSeleccionada = vista.tablaUsuarios.getSelectedRow();
         if (filaSeleccionada == -1) {
-        	return;
+            return;
         }
         
         int filaModelo = vista.tablaUsuarios.convertRowIndexToModel(filaSeleccionada);
@@ -500,11 +419,33 @@ public class ControladorGestionUsuarios implements ActionListener {
         
         Usuario user = daoUsuario.buscarUsuarioPorNombre(usuario);
         if (user != null) {
-            vista.txtUsuario.setText(user.getUsuario());
-            vista.txtNombreCompleto.setText(user.getNombreCompleto());
-            vista.cmbRol.setSelectedItem(user.getRol());
+            if (vista.txtUsuario != null) {
+                vista.txtUsuario.setText(user.getUsuario());
+            }
+            if (vista.txtNombreCompleto != null) {
+                vista.txtNombreCompleto.setText(user.getNombreCompleto());
+            }
+            if (vista.cmbRol != null) {
+                vista.cmbRol.setSelectedItem(user.getRol());
+            }
             // No cargamos la contraseña por seguridad
         }
     }
-
+    
+    private String sanitizarTexto(String texto) {
+        if (texto == null) return "";
+        
+        // Remover caracteres peligrosos para HTML/JavaScript
+        return texto.replaceAll("[<>\"'&;]", "");
+    }
+    
+    // Getter para DAOUsuario si es necesario
+    public DAOUsuario getDaoUsuario() {
+        return daoUsuario;
+    }
+    
+    // Getter para DAORol si es necesario
+    public DAORol getDaoRol() {
+        return daoRol;
+    }
 }

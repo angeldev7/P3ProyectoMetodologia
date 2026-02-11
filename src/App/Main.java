@@ -7,12 +7,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import controller.ControladorInventario;
-import controller.ControladorGestionUsuarios;
+import controller.GestorInventario;
+import controller.GestorUsuariosRoles;
 import Database.ConexionBaseDatos;
 import DAO.ServicioAutenticacion;
 import model.InventarioDAO;  // CAMBIADO: De Inventario a InventarioDAO
-import util.MigradorContrasenas;
 import view.VentanaPrincipal;
 import view.VentanaLogin;
 public class Main {
@@ -90,12 +89,12 @@ public class Main {
     }
 
     private static void mostrarVentanaPrincipal() {
-        ventanaPrincipal = new VentanaPrincipal();
+    	ventanaPrincipal = new VentanaPrincipal();
         
-        // Configurar controladores
+        // Configurar controladores refactorizados
         logger.info("Creando controladores...");
-        new ControladorInventario(ventanaPrincipal, inventario);
-        new ControladorGestionUsuarios(ventanaPrincipal.panelGestionUsuarios);
+        new GestorInventario(ventanaPrincipal, inventario);
+        new GestorUsuariosRoles(ventanaPrincipal.panelGestionUsuarios);
         
         // Obtener información del usuario actual
         String usuario = servicioAuth.getUsuarioActual();
