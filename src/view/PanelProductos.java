@@ -9,11 +9,13 @@ import java.awt.*;
 public class PanelProductos extends JPanel {
     private static final long serialVersionUID = 1L;
     public JTextField txtCodigo, txtNombre, txtStock, txtPrecio, txtStockMinimo, txtBuscar;
+    public JTextField txtPasillo, txtEstante, txtPosicion; // NUEVO: Campos para ubicación
     public JTextArea txtDescripcion;
     public JButton btnGuardarProducto, btnNuevoProducto, btnEliminarProducto;
+    public JButton btnBuscarPorUbicacion; // NUEVO: Botón para buscar por ubicación
     public JTable tablaProductos;
     public DefaultTableModel modeloTabla;
-    public TableRowSorter<DefaultTableModel> ordenador;
+    public transient TableRowSorter<DefaultTableModel> ordenador;
 
     public PanelProductos() {
         setBackground(new Color(45, 45, 45));
@@ -33,6 +35,10 @@ public class PanelProductos extends JPanel {
         txtPrecio = crearCampoTexto();
         txtStockMinimo = crearCampoTexto();
         txtBuscar = crearCampoTexto();
+        // NUEVO: Campos para ubicación
+        txtPasillo = crearCampoTexto();
+        txtEstante = crearCampoTexto();
+        txtPosicion = crearCampoTexto();
 
         // Área de texto
         txtDescripcion = new JTextArea(3, 20);
@@ -41,12 +47,13 @@ public class PanelProductos extends JPanel {
         estiloAreaTexto(txtDescripcion);
 
         // Botones
-        btnGuardarProducto = crearBoton("💾 Guardar Producto", new Color(0, 123, 255));
-        btnNuevoProducto = crearBoton("✨ Nuevo Producto", new Color(40, 167, 69));
-        btnEliminarProducto = crearBoton("🗑️ Eliminar Producto", new Color(220, 53, 69));
+        btnGuardarProducto = crearBoton("Guardar Producto", new Color(0, 123, 255));
+        btnNuevoProducto = crearBoton("Nuevo Producto", new Color(40, 167, 69));
+        btnEliminarProducto = crearBoton("Eliminar Producto", new Color(220, 53, 69));
+        btnBuscarPorUbicacion = crearBoton("Buscar por Ubicación", new Color(255, 193, 7));
 
         // Tabla
-        String[] nombresColumnas = {"Código", "Nombre", "Descripción", "Stock", "Precio", "Stock Mínimo", "Estado"};
+        String[] nombresColumnas = {"Código", "Nombre", "Descripción", "Stock", "Precio", "Stock Mínimo", "Ubicación", "Estado"};
         modeloTabla = new DefaultTableModel(nombresColumnas, 0) {
             private static final long serialVersionUID = 1L;
             @Override
@@ -130,14 +137,34 @@ public class PanelProductos extends JPanel {
         gbc.gridx = 3;
         panel.add(txtPrecio, gbc);
         
-        // Fila 3: Stock Mínimo y botones
+        // Fila 3: Stock Mínimo y Ubicación
         gbc.gridx = 0; gbc.gridy = 3;
         panel.add(crearEtiqueta("Stock Mínimo:"), gbc);
         
         gbc.gridx = 1;
         panel.add(txtStockMinimo, gbc);
         
-        gbc.gridx = 2; gbc.gridwidth = 2;
+        gbc.gridx = 2;
+        panel.add(crearEtiqueta("Pasillo:"), gbc);
+        
+        gbc.gridx = 3;
+        panel.add(txtPasillo, gbc);
+        
+        // Fila 4: Estante y Posición
+        gbc.gridx = 0; gbc.gridy = 4;
+        panel.add(crearEtiqueta("Estante:"), gbc);
+        
+        gbc.gridx = 1;
+        panel.add(txtEstante, gbc);
+        
+        gbc.gridx = 2;
+        panel.add(crearEtiqueta("Posición:"), gbc);
+        
+        gbc.gridx = 3;
+        panel.add(txtPosicion, gbc);
+        
+        // Fila 5: Botones
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 4;
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         panelBotones.setBackground(new Color(55, 55, 55));
         panelBotones.add(btnGuardarProducto);
@@ -153,9 +180,13 @@ public class PanelProductos extends JPanel {
         panel.setBackground(new Color(55, 55, 55));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         
-        panel.add(crearEtiqueta("🔍 Buscar:"));
+        panel.add(crearEtiqueta("Buscar:"));
         panel.add(txtBuscar);
         txtBuscar.setPreferredSize(new Dimension(200, 30));
+        
+        // Agregar botón de búsqueda por ubicación
+        panel.add(Box.createRigidArea(new Dimension(20, 0))); // Espaciado
+        panel.add(btnBuscarPorUbicacion);
         
         return panel;
     }

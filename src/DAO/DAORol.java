@@ -19,6 +19,11 @@ public class DAORol {
     private MongoCollection<Document> coleccion;
     private static final Logger logger = LoggerFactory.getLogger(DAORol.class);
     
+    // Constructor para testing con inyección de dependencias
+    public DAORol(MongoCollection<Document> coleccion) {
+        this.coleccion = coleccion;
+    }
+    
     public DAORol() {
         this.coleccion = ConexionBaseDatos.getColeccion("roles");
     }

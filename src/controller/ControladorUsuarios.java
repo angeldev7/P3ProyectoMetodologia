@@ -21,7 +21,18 @@ public class ControladorUsuarios implements ActionListener {
     private DAORol daoRol;  // Agregado para manejar roles
     private static final String USUARIO_NO_SELECCIONADO = "Usuario No Seleccionado";
     
+<<<<<<< HEAD:src/controller/ControladorUsuarios.java
     public ControladorUsuarios(PanelGestionUsuarios vista, DAOUsuario daoUsuario) {
+=======
+    // Constructor para testing con inyección de dependencias
+    public ControladorGestionUsuarios(PanelGestionUsuarios vista, DAOUsuario daoUsuario, DAORol daoRol) {
+        this.vista = vista;
+        this.daoUsuario = daoUsuario;
+        this.daoRol = daoRol;
+    }
+    
+    public ControladorGestionUsuarios(PanelGestionUsuarios vista) {
+>>>>>>> origin/Test:src/controller/ControladorGestionUsuarios.java
         this.vista = vista;
         this.daoUsuario = daoUsuario;
         this.daoRol = new DAORol(); // Inicializamos DAORol

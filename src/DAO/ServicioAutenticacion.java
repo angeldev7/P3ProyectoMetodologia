@@ -19,6 +19,13 @@ public class ServicioAutenticacion {
     private AccesoSistemaDAO accesoDAO;
     private static final Logger logger = LoggerFactory.getLogger(ServicioAutenticacion.class);
 
+    // Constructor para testing con inyección de dependencias
+    public ServicioAutenticacion(DAOUsuario daoUsuario, DAORol daoRol, AccesoSistemaDAO accesoDAO) {
+        this.daoUsuario = daoUsuario;
+        this.daoRol = daoRol;
+        this.accesoDAO = accesoDAO;
+    }
+
     public ServicioAutenticacion() {
         this.daoUsuario = new DAOUsuario();
         this.daoRol = new DAORol();

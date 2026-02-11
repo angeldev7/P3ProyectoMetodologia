@@ -38,6 +38,7 @@
             <version>5.10.1</version>
             <scope>test</scope>
         </dependency>
+<<<<<<< HEAD
 		
 		
 		<!-- SLF4J API -->
@@ -53,6 +54,33 @@
 	        <artifactId>logback-classic</artifactId>
 	        <version>1.4.11</version>
 	    </dependency>
+=======
+        
+        <!-- Mockito para mocking en tests -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.15.2</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Mockito JUnit Jupiter integration -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>5.15.2</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- AssertJ para assertions fluidas -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.24.2</version>
+            <scope>test</scope>
+        </dependency>
+
+>>>>>>> origin/Test
     </dependencies>
 
     <build>
@@ -65,6 +93,11 @@
                 <version>3.13.0</version>
                 <configuration>
                     <release>17</release>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                    </compilerArgs>
                 </configuration>
                 <executions>
                     <execution>
@@ -74,8 +107,11 @@
                             <goal>compile</goal>
                         </goals>
                         <configuration>
+                            <includes>
+                                <include>**/*.java</include>
+                            </includes>
                             <excludes>
-                                <exclude>**/test/**</exclude>
+                                <exclude>test/**</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -88,6 +124,7 @@
                         <configuration>
                             <testIncludes>
                                 <testInclude>**/*Test.java</testInclude>
+                                <testInclude>**/*IntegrationTest.java</testInclude>
                             </testIncludes>
                         </configuration>
                     </execution>
@@ -99,6 +136,103 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/*IntegrationTest.java</exclude>
+                        <exclude>test/DAORolTest.java</exclude>
+                        <exclude>test/DAOUsuarioTest.java</exclude>
+                        <exclude>test/ProductoDAOTest.java</exclude>
+                    </excludes>
+                    <argLine>@{argLine} -Dnet.bytebuddy.experimental=true</argLine>
+                </configuration>
+            </plugin>
+            
+            <!-- JaCoCo Plugin para code coverage -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <configuration>
+                    <excludes>
+                        <!-- Excluir clases del sistema de Java que causan problemas -->
+                        <exclude>sun/**</exclude>
+                        <exclude>jdk/**</exclude>
+                        <exclude>java/**</exclude>
+                        <exclude>javax/**</exclude>
+                        <!-- Excluir paquete view completamente del coverage -->
+                        <exclude>view/**</exclude>
+                        <exclude>**/view/**</exclude>
+                        <!-- Excluir ejecutable principal -->
+                        <exclude>App/Main.class</exclude>
+                        <exclude>**/Main.class</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>sun/**</exclude>
+                                <exclude>jdk/**</exclude>
+                                <exclude>java/**</exclude>
+                                <exclude>javax/**</exclude>
+                                <exclude>view/**</exclude>
+                                <exclude>**/view/**</exclude>
+                                <exclude>App/**</exclude>
+                                <exclude>**/App/**</exclude>
+                                <exclude>**/Main.class</exclude>
+                                <exclude>Database/**</exclude>
+                                <exclude>**/Database/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.30</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.25</minimum>
+                                        </limit>
+                                    </limits>
+                                    <excludes>
+                                        <!-- Excluir view y App del análisis de coverage -->
+                                        <exclude>view.*</exclude>
+                                        <exclude>view.**</exclude>
+                                        <exclude>App.*</exclude>
+                                        <exclude>App.**</exclude>
+                                    </excludes>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             
             <!-- Plugin para crear JAR ejecutable con dependencias -->

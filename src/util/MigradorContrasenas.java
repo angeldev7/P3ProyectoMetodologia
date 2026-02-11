@@ -27,6 +27,10 @@ public class MigradorContrasenas {
             }
         }
         
+<<<<<<< HEAD
         logger.info("✅ Migración completada: " + migrados + " usuarios migrados");
+=======
+        System.out.println("Migración completada: " + migrados + " usuarios migrados");
+>>>>>>> origin/Test
     }
 }

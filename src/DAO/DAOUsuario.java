@@ -23,6 +23,11 @@ public class DAOUsuario {
     private MongoCollection<Document> coleccion;
     private static final Logger logger = LoggerFactory.getLogger(DAOUsuario.class);
     
+    // Constructor para testing con inyección de dependencias
+    public DAOUsuario(MongoCollection<Document> coleccion) {
+        this.coleccion = coleccion;
+    }
+    
     public DAOUsuario() {
         this.coleccion = ConexionBaseDatos.getColeccion("usuarios");
     }

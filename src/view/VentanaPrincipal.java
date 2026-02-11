@@ -35,7 +35,7 @@ public class VentanaPrincipal extends JFrame {
     }
     
     private void configurarVentana() {
-        setTitle("🔧 Ferretería Carlín - Sistema de Gestión");
+        setTitle("Ferretería Carlín - Sistema de Gestión");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setMinimumSize(new Dimension(1200, 700));
@@ -82,7 +82,7 @@ public class VentanaPrincipal extends JFrame {
         JMenu menuSistema = new JMenu("Sistema");
         estiloMenu(menuSistema);
         
-        JMenuItem itemCerrarSesion = new JMenuItem("🔒 Cerrar Sesión");
+        JMenuItem itemCerrarSesion = new JMenuItem("Cerrar Sesión");
         estiloItemMenu(itemCerrarSesion);
         
         itemCerrarSesion.addActionListener(e -> Main.cerrarSesion());
@@ -105,9 +105,9 @@ public class VentanaPrincipal extends JFrame {
         setJMenuBar(barraMenu);
         
         // Agregar pestañas
-        panelPestanas.addTab("📦 Gestión de Productos", panelProductos);
+        panelPestanas.addTab("Gestión de Productos", panelProductos);
         panelPestanas.addTab("🛒 Módulo de Ventas", panelVentas);
-        panelPestanas.addTab("📊 Reportes y Análisis", panelReportes);
+        panelPestanas.addTab("Reportes y Análisis", panelReportes);
         panelPestanas.addTab("👥 Gestión de Usuarios", panelGestionUsuarios);
         
         add(panelPestanas, BorderLayout.CENTER);
@@ -195,7 +195,7 @@ public class VentanaPrincipal extends JFrame {
     }
     
     public void setUsuarioActual(String usuario, String rol) {
-        lblEstadoUsuario.setText("👤 " + usuario + " | 🎭 " + rol);
+        lblEstadoUsuario.setText(usuario + " | " + rol);
     }
     
     // Método para obtener paneles (para el controlador)
