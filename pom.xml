@@ -8,7 +8,6 @@
     <artifactId>ProyectoMetodologia</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <!-- AQUI VAN LAS DEPENDENCIAS -->
     <dependencies>
 
         <!-- Dependencia para MongoDB -->
@@ -17,20 +16,34 @@
             <artifactId>mongodb-driver-sync</artifactId>
             <version>5.2.1</version>
         </dependency>
-        
+
         <!-- SLF4J para logging de MongoDB -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>2.0.9</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
-        
+
+        <!-- SLF4J API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.9</version>
+        </dependency>
+
+        <!-- Logback Implementation -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.11</version>
+        </dependency>
+
         <!-- JUnit 5 para tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -38,7 +51,7 @@
             <version>5.10.1</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- Mockito para mocking en tests -->
         <dependency>
             <groupId>org.mockito</groupId>
@@ -46,7 +59,7 @@
             <version>5.15.2</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- Mockito JUnit Jupiter integration -->
         <dependency>
             <groupId>org.mockito</groupId>
@@ -54,7 +67,7 @@
             <version>5.15.2</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- AssertJ para assertions fluidas -->
         <dependency>
             <groupId>org.assertj</groupId>
@@ -112,7 +125,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <!-- Plugin para ejecutar tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -132,7 +145,7 @@
                     <argLine>@{argLine} -Dnet.bytebuddy.experimental=true</argLine>
                 </configuration>
             </plugin>
-            
+
             <!-- JaCoCo Plugin para code coverage -->
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -140,15 +153,12 @@
                 <version>0.8.12</version>
                 <configuration>
                     <excludes>
-                        <!-- Excluir clases del sistema de Java que causan problemas -->
                         <exclude>sun/**</exclude>
                         <exclude>jdk/**</exclude>
                         <exclude>java/**</exclude>
                         <exclude>javax/**</exclude>
-                        <!-- Excluir paquete view completamente del coverage -->
                         <exclude>view/**</exclude>
                         <exclude>**/view/**</exclude>
-                        <!-- Excluir ejecutable principal -->
                         <exclude>App/Main.class</exclude>
                         <exclude>**/Main.class</exclude>
                     </excludes>
@@ -204,7 +214,6 @@
                                         </limit>
                                     </limits>
                                     <excludes>
-                                        <!-- Excluir view y App del análisis de coverage -->
                                         <exclude>view.*</exclude>
                                         <exclude>view.**</exclude>
                                         <exclude>App.*</exclude>
@@ -216,7 +225,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <!-- Plugin para crear JAR ejecutable con dependencias -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
