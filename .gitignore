@@ -6,6 +6,7 @@ config.properties
 .classpath
 .settings/
 bin/
+*.launch
 
 # Ignore Maven target directory
 target/
@@ -16,6 +17,14 @@ dependency-reduced-pom.xml
 # Build logs
 build_output.txt
 
+# Logging config (local)
+logback.xml
+
 # OS files
 .DS_Store
 Thumbs.db
+
+# IDE files
+*.iml
+.idea/
+.vscode/

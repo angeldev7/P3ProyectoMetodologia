@@ -216,4 +216,38 @@ public class AccesoSistemaDAOMockTest {
     public void testEliminarRegistrosAntiguos() {
         assertTrue(dao.eliminarRegistrosAntiguos(30));
     }
+
+    // --- Tests para sanitizarTexto y fecha inválida ---
+
+    @Test
+    public void testRegistrarAccesoConTextoNull() {
+        AccesoSistema acceso = new AccesoSistema(null, null, "EXITOSO", null);
+        assertDoesNotThrow(() -> dao.registrarAcceso(acceso));
+        verify(mockColeccion).insertOne(any(Document.class));
+    }
+
+    @Test
+    public void testRegistrarAccesoConCaracteresEspeciales() {
+        AccesoSistema acceso = new AccesoSistema("user<script>", "Admin\"", "EXITOSO", "msg&;test");
+        assertDoesNotThrow(() -> dao.registrarAcceso(acceso));
+        verify(mockColeccion).insertOne(any(Document.class));
+    }
+
+    @Test
+    public void testObtenerAccesosPorFechaNull() {
+        List<AccesoSistema> accesos = dao.obtenerAccesosPorFecha(null);
+        assertTrue(accesos.isEmpty());
+    }
+
+    @Test
+    public void testObtenerAccesosPorFechaFormatoInvalido() {
+        List<AccesoSistema> accesos = dao.obtenerAccesosPorFecha("invalid-date");
+        assertTrue(accesos.isEmpty());
+    }
+
+    @Test
+    public void testObtenerAccesosPorFechaFormatoIncompleto() {
+        List<AccesoSistema> accesos = dao.obtenerAccesosPorFecha("2025-01");
+        assertTrue(accesos.isEmpty());
+    }
 }

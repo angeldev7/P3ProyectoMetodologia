@@ -216,4 +216,140 @@ public class ServicioAutenticacionMockTest {
         when(mockAccesoDAO.contarAccesosTotales()).thenThrow(new RuntimeException("Error"));
         assertDoesNotThrow(() -> servicio.mostrarEstadisticasAccesos());
     }
+
+    // --- Tests para inicializarAdminPorDefecto ---
+
+    @Test
+    public void testInicializarAdminCuandoNoExiste() {
+        // admin no existe, rol no existe -> crea ambos
+        when(mockDaoUsuario.buscarUsuarioPorNombre("admin")).thenReturn(null);
+        when(mockDaoRol.buscarRolPorNombre("Administrador")).thenReturn(null);
+        when(mockDaoUsuario.crearUsuario(any(Usuario.class))).thenReturn(true);
+
+        ServicioAutenticacion svc = new ServicioAutenticacion(mockDaoUsuario, mockDaoRol, mockAccesoDAO);
+        // El constructor DI no llama inicializarAdminPorDefecto, necesitamos forzarlo
+        // Usamos reflexión
+        try {
+            java.lang.reflect.Method m = ServicioAutenticacion.class.getDeclaredMethod("inicializarAdminPorDefecto");
+            m.setAccessible(true);
+            m.invoke(svc);
+        } catch (Exception e) {
+            fail("Reflection failed: " + e.getMessage());
+        }
+
+        verify(mockDaoRol).crearRol(any(Rol.class));
+        verify(mockDaoUsuario).crearUsuario(any(Usuario.class));
+        verify(mockDaoRol).actualizarContadorUsuarios("Administrador", 1);
+    }
+
+    @Test
+    public void testInicializarAdminCuandoNoExisteRolYaExiste() {
+        when(mockDaoUsuario.buscarUsuarioPorNombre("admin")).thenReturn(null);
+        Rol rolAdmin = new Rol("Administrador");
+        when(mockDaoRol.buscarRolPorNombre("Administrador")).thenReturn(rolAdmin);
+        when(mockDaoUsuario.crearUsuario(any(Usuario.class))).thenReturn(true);
+
+        ServicioAutenticacion svc = new ServicioAutenticacion(mockDaoUsuario, mockDaoRol, mockAccesoDAO);
+        try {
+            java.lang.reflect.Method m = ServicioAutenticacion.class.getDeclaredMethod("inicializarAdminPorDefecto");
+            m.setAccessible(true);
+            m.invoke(svc);
+        } catch (Exception e) {
+            fail("Reflection failed: " + e.getMessage());
+        }
+
+        verify(mockDaoRol, never()).crearRol(any(Rol.class));
+        verify(mockDaoUsuario).crearUsuario(any(Usuario.class));
+    }
+
+    @Test
+    public void testInicializarAdminCrearUsuarioFalla() {
+        when(mockDaoUsuario.buscarUsuarioPorNombre("admin")).thenReturn(null);
+        when(mockDaoRol.buscarRolPorNombre("Administrador")).thenReturn(new Rol("Administrador"));
+        when(mockDaoUsuario.crearUsuario(any(Usuario.class))).thenReturn(false);
+
+        ServicioAutenticacion svc = new ServicioAutenticacion(mockDaoUsuario, mockDaoRol, mockAccesoDAO);
+        try {
+            java.lang.reflect.Method m = ServicioAutenticacion.class.getDeclaredMethod("inicializarAdminPorDefecto");
+            m.setAccessible(true);
+            m.invoke(svc);
+        } catch (Exception e) {
+            fail("Reflection failed: " + e.getMessage());
+        }
+
+        verify(mockDaoRol, never()).actualizarContadorUsuarios(anyString(), anyInt());
+    }
+
+    @Test
+    public void testInicializarAdminYaExisteContrasenaNoHasheada() {
+        Usuario admin = new Usuario("admin", "plaintext", "Admin", "Administrador");
+        when(mockDaoUsuario.buscarUsuarioPorNombre("admin")).thenReturn(admin);
+        when(mockDaoUsuario.cambiarContrasena("admin", "plaintext")).thenReturn(true);
+
+        ServicioAutenticacion svc = new ServicioAutenticacion(mockDaoUsuario, mockDaoRol, mockAccesoDAO);
+        try {
+            java.lang.reflect.Method m = ServicioAutenticacion.class.getDeclaredMethod("inicializarAdminPorDefecto");
+            m.setAccessible(true);
+            m.invoke(svc);
+        } catch (Exception e) {
+            fail("Reflection failed: " + e.getMessage());
+        }
+
+        verify(mockDaoUsuario).cambiarContrasena("admin", "plaintext");
+    }
+
+    @Test
+    public void testInicializarAdminYaExisteContrasenaHasheada() {
+        Usuario admin = new Usuario("admin", "$2a$10$hashedvalue", "Admin", "Administrador");
+        when(mockDaoUsuario.buscarUsuarioPorNombre("admin")).thenReturn(admin);
+
+        ServicioAutenticacion svc = new ServicioAutenticacion(mockDaoUsuario, mockDaoRol, mockAccesoDAO);
+        try {
+            java.lang.reflect.Method m = ServicioAutenticacion.class.getDeclaredMethod("inicializarAdminPorDefecto");
+            m.setAccessible(true);
+            m.invoke(svc);
+        } catch (Exception e) {
+            fail("Reflection failed: " + e.getMessage());
+        }
+
+        verify(mockDaoUsuario, never()).cambiarContrasena(anyString(), anyString());
+    }
+
+    // --- Tests para autenticar edge cases ---
+
+    @Test
+    public void testAutenticarUsuarioNull() {
+        assertFalse(servicio.autenticar(null, "pass"));
+    }
+
+    @Test
+    public void testAutenticarContrasenaNull() {
+        assertFalse(servicio.autenticar("user", null));
+    }
+
+    @Test
+    public void testAutenticarAmbosNull() {
+        assertFalse(servicio.autenticar(null, null));
+    }
+
+    @Test
+    public void testAutenticarUsuarioConRolNull() {
+        Usuario user = new Usuario("user1", "hash", "User", null);
+        when(mockDaoUsuario.buscarUsuarioPorNombre("user1")).thenReturn(user);
+        when(mockDaoUsuario.autenticar("user1", "pass")).thenReturn(false);
+
+        assertFalse(servicio.autenticar("user1", "pass"));
+    }
+
+    @Test
+    public void testAutenticarConCaracteresEspeciales() {
+        // El sanitizado remueve <>"'&;
+        when(mockDaoUsuario.buscarUsuarioPorNombre("testuser")).thenReturn(null);
+        assertFalse(servicio.autenticar("test<user>", "pass"));
+    }
+
+    @Test
+    public void testTienePermisoNull() {
+        assertFalse(servicio.tienePermiso(null));
+    }
 }
