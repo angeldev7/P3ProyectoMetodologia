@@ -1,25 +1,38 @@
 // App/Main.java
 package App;
+import ch.qos.logback.classic.util.ContextInitializer;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-
-import controller.ControladorInventario;
-import controller.ControladorGestionUsuarios;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import controller.GestorInventario;
+import controller.GestorUsuariosRoles;
 import Database.ConexionBaseDatos;
 import DAO.ServicioAutenticacion;
 import model.InventarioDAO;  // CAMBIADO: De Inventario a InventarioDAO
-import util.MigradorContrasenas;
 import view.VentanaPrincipal;
 import view.VentanaLogin;
-
-import java.util.List;
-
 public class Main {
-    private static ServicioAutenticacion servicioAuth; // DEBE ser estático y único
+    private static ServicioAutenticacion servicioAuth;
     private static VentanaPrincipal ventanaPrincipal;
     private static VentanaLogin ventanaLogin;
-    private static InventarioDAO inventario;  // NUEVO: Variable para InventarioDAO
+    private static InventarioDAO inventario;
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    
+    static {
+        // Forzar a Logback a usar archivo de configuración
+        System.setProperty(ContextInitializer.CONFIG_FILE_PROPERTY, "logback.xml");
+        
+        // Registrar hook de shutdown
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Cerrando conexiones del sistema...");
+            ConexionBaseDatos.cerrar();
+        }));
+    }
+    
+    
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -31,20 +44,17 @@ public class Main {
                     try {
                         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        logger.error("Error al configurar el Look and Feel: " + ex.getMessage());
                     }
                 }
                 
                 ConexionBaseDatos.conectar();
                 
-                // Ejecutar migración de contraseñas si es necesario
-                MigradorContrasenas.migrarUsuariosExistentes();
-                
                 // Inicializar servicios
                 servicioAuth = new ServicioAutenticacion();
                 inventario = new InventarioDAO();
                 
-                System.out.println("Sistema inicializado con " + inventario.obtenerCantidadProductos() + " productos");
+                logger.info("Sistema inicializado con " + inventario.obtenerCantidadProductos() + " productos");
                 
                 mostrarVentanaLogin();
             }
@@ -65,45 +75,45 @@ public class Main {
         ventanaLogin.setLoginListener(new VentanaLogin.ListenerLogin() {
             @Override
             public void onLoginExitoso(String usuario, String rol) {
-                System.out.println("Login exitoso - Usuario: " + usuario + " | Rol: " + rol);
+               logger.error("Login exitoso - Usuario: " + usuario + " | Rol: " + rol);
                 ventanaLogin.setVisible(false);
                 mostrarVentanaPrincipal();
             }
 
             @Override
             public void onLoginFallido(String mensaje) {
-                System.err.println("Login fallido: " + mensaje);
+                logger.error("Login fallido: " + mensaje);
             }
         });
         ventanaLogin.setVisible(true);
     }
 
     private static void mostrarVentanaPrincipal() {
-        ventanaPrincipal = new VentanaPrincipal();
+    	ventanaPrincipal = new VentanaPrincipal();
         
-        // Configurar controladores
-        System.out.println("Creando controladores...");
-        new ControladorInventario(ventanaPrincipal, inventario);
-        new ControladorGestionUsuarios(ventanaPrincipal.panelGestionUsuarios);
+        // Configurar controladores refactorizados
+        logger.info("Creando controladores...");
+        new GestorInventario(ventanaPrincipal, inventario);
+        new GestorUsuariosRoles(ventanaPrincipal.panelGestionUsuarios);
         
         // Obtener información del usuario actual
         String usuario = servicioAuth.getUsuarioActual();
         String rol = servicioAuth.getRolActual();
         List<String> permisos = servicioAuth.getPermisosActuales();
         
-        System.out.println("Usuario: " + usuario + " | Rol: " + rol);
-        System.out.println("Permisos: " + permisos);
+        logger.info("Usuario: " + usuario + " | Rol: " + rol);
+        logger.info("Permisos: " + permisos);
         
         // Configurar título
-        ventanaPrincipal.setTitle("Ferretería Carlin - Sistema de Gestión (Usuario: " + usuario + " | Rol: " + rol + ")");
+        ventanaPrincipal.setTitle("Ferretería Carlín - Sistema de Gestión (Usuario: " + usuario + " | Rol: " + rol + ")");
         
         // Aplicar permisos según el rol
         if (permisos != null && !permisos.isEmpty()) {
             ventanaPrincipal.aplicarPermisos(permisos);
-            System.out.println("Permisos aplicados correctamente");
+            logger.info("Permisos aplicados correctamente");
         } else {
             ventanaPrincipal.habilitarTodasLasPestanas();
-            System.out.println("Advertencia: No se encontraron permisos específicos");
+            logger.info("Advertencia: No se encontraron permisos específicos");
         }
         
         ventanaPrincipal.setVisible(true);

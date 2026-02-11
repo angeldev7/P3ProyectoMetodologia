@@ -7,10 +7,12 @@ import javax.swing.border.*;
 import java.awt.*;
 import model.CarritoCompra;
 import model.ItemCarrito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PanelVentas extends JPanel {
     private static final long serialVersionUID = 1L;
-    
+    private static final Logger logger = LoggerFactory.getLogger(PanelVentas.class);
     // Componentes para carrito
     public JComboBox<String> cmbProductos;
     public JTextField txtCantidad;
@@ -19,7 +21,7 @@ public class PanelVentas extends JPanel {
     public DefaultTableModel modeloCarrito, modeloTabla;
     public JLabel lblTotalCarrito, lblCantidadItems;
     
-    private transient CarritoCompra carrito;
+    private CarritoCompra carrito;
 
     public PanelVentas() {
         setBackground(new Color(45, 45, 45));
@@ -41,8 +43,8 @@ public class PanelVentas extends JPanel {
         txtCantidad.setToolTipText("Ingrese la cantidad a agregar al carrito");
         
         btnAgregarAlCarrito = crearBoton("➕ Agregar al Carrito", new Color(0, 123, 255));
-        btnEliminarDelCarrito = crearBoton("Eliminar del Carrito", new Color(220, 53, 69));
-        btnProcesarVenta = crearBoton("Procesar Venta", new Color(40, 167, 69));
+        btnEliminarDelCarrito = crearBoton("🗑️ Eliminar del Carrito", new Color(220, 53, 69));
+        btnProcesarVenta = crearBoton("💰 Procesar Venta", new Color(40, 167, 69));
         
         lblTotalCarrito = crearEtiqueta("$0.00");
         lblCantidadItems = crearEtiqueta("0");
@@ -89,7 +91,7 @@ public class PanelVentas extends JPanel {
         
         // Agregar pestañas - solo carrito e historial
         panelPestanas.addTab("🛒 Realizar Venta", crearPanelCarrito());
-        panelPestanas.addTab("Historial Ventas", crearPanelHistorialVentas());
+        panelPestanas.addTab("📋 Historial Ventas", crearPanelHistorialVentas());
         
         panelPrincipal.add(panelPestanas, BorderLayout.CENTER);
         add(panelPrincipal, BorderLayout.CENTER);
@@ -249,7 +251,7 @@ public class PanelVentas extends JPanel {
         if (modeloCarrito != null && carrito != null) {
             modeloCarrito.setRowCount(0); // Limpiar tabla primero
             
-            System.out.println("Actualizando tabla del carrito. Items: " + carrito.getItems().size());
+            logger.info("Actualizando tabla del carrito. Items: " + carrito.getItems().size());
             
             for (ItemCarrito item : carrito.getItems()) {
                 Object[] fila = {
@@ -260,7 +262,7 @@ public class PanelVentas extends JPanel {
                     String.format("$%.2f", item.getSubtotal())
                 };
                 modeloCarrito.addRow(fila);
-                System.out.println("Agregado a tabla: " + item.getNombreProducto() + " x " + item.getCantidad());
+                logger.info("Agregado a tabla: " + item.getNombreProducto() + " x " + item.getCantidad());
             }
             
             // Actualizar total y cantidad
@@ -271,15 +273,15 @@ public class PanelVentas extends JPanel {
             modeloCarrito.fireTableDataChanged();
             repaint();
             
-            System.out.println("Tabla del carrito actualizada. Total: $" + carrito.getTotal());
+            logger.info("Tabla del carrito actualizada. Total: $" + carrito.getTotal());
         } else {
-            System.err.println("Error: carrito o modeloCarrito es null");
+            logger.error("❌ Error: carrito o modeloCarrito es null");
         }
     }
 
     public void setCarrito(CarritoCompra carrito) {
         this.carrito = carrito;
-        System.out.println("Carrito asignado al panel de ventas");
+        logger.info("Carrito asignado al panel de ventas");
         actualizarCarritoEnTabla();
     }
 
@@ -290,12 +292,12 @@ public class PanelVentas extends JPanel {
         }
     }
     
-    // NUEVO: Método para obtener el carrito
+    // ✅ NUEVO: Método para obtener el carrito
     public CarritoCompra getCarrito() {
         return carrito;
     }
     
-    // NUEVO: Método para actualizar combo de productos
+    // ✅ NUEVO: Método para actualizar combo de productos
     public void actualizarComboProductos(java.util.List<String> productos) {
         cmbProductos.removeAllItems();
         for (String producto : productos) {
@@ -306,7 +308,7 @@ public class PanelVentas extends JPanel {
         }
     }
     
-    // NUEVO: Método para obtener la cantidad ingresada
+    // ✅ NUEVO: Método para obtener la cantidad ingresada
     public int getCantidad() {
         try {
             return Integer.parseInt(txtCantidad.getText().trim());
@@ -315,7 +317,7 @@ public class PanelVentas extends JPanel {
         }
     }
     
-    // NUEVO: Método para obtener el producto seleccionado
+    // ✅ NUEVO: Método para obtener el producto seleccionado
     public String getProductoSeleccionado() {
         return (String) cmbProductos.getSelectedItem();
     }

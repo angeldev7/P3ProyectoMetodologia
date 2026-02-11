@@ -2,6 +2,7 @@
 package view;
 
 import javax.swing.*;
+
 import javax.swing.table.*;
 import javax.swing.border.*;
 import java.awt.*;
@@ -50,14 +51,14 @@ public class PanelGestionUsuarios extends JPanel {
         // Botones
         btnGuardarUsuario = crearBoton("💾 Guardar Usuario", new Color(0, 123, 255));
         btnNuevoUsuario = crearBoton("✨ Nuevo Usuario", new Color(40, 167, 69));
-        btnEliminarUsuario = crearBoton("Eliminar Usuario", new Color(220, 53, 69));
-        btnResetearContrasena = crearBoton("Resetear Contraseña", new Color(255, 193, 7));
+        btnEliminarUsuario = crearBoton("🗑️ Eliminar Usuario", new Color(220, 53, 69));
+        btnResetearContrasena = crearBoton("🔑 Resetear Contraseña", new Color(255, 193, 7));
         btnGuardarRol = crearBoton("💾 Guardar Rol", new Color(108, 117, 125));
         btnNuevoRol = crearBoton("✨ Nuevo Rol", new Color(40, 167, 69));
         btnBloquearUsuario = crearBoton("🚫 Bloquear Usuario", new Color(255, 193, 7));
-        btnDesbloquearUsuario = crearBoton("Desbloquear Usuario", new Color(40, 167, 69));
-        btnEditarRol = crearBoton("Editar Rol", new Color(108, 117, 125));
-        btnEliminarRol = crearBoton("Eliminar Rol", new Color(220, 53, 69));
+        btnDesbloquearUsuario = crearBoton("✅ Desbloquear Usuario", new Color(40, 167, 69));
+        btnEditarRol = crearBoton("✏️ Editar Rol", new Color(108, 117, 125));
+        btnEliminarRol = crearBoton("🗑️ Eliminar Rol", new Color(220, 53, 69));
 
         // Checkboxes de permisos
         chkGestionarProductos = crearCheckbox("Gestionar Productos");
@@ -247,7 +248,7 @@ public class PanelGestionUsuarios extends JPanel {
         // Panel de búsqueda
         JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panelBusqueda.setBackground(new Color(55, 55, 55));
-        panelBusqueda.add(crearEtiqueta("Buscar:"));
+        panelBusqueda.add(crearEtiqueta("🔍 Buscar:"));
         txtBuscar.setPreferredSize(new Dimension(200, 30));
         panelBusqueda.add(txtBuscar);
         
@@ -374,7 +375,8 @@ public class PanelGestionUsuarios extends JPanel {
         chkGestionarUsuarios.setSelected(false);
         
         if (permisosStr != null && !permisosStr.isEmpty()) {
-            String[] permisos = permisosStr.split(",");
+            String permisosLimpio = permisosStr.replaceAll("[<>\"'&;]", "");
+            String[] permisos = permisosLimpio.split(",");
             for (String permiso : permisos) {
                 switch (permiso.trim()) {
                     case "puedeGestionarProductos":

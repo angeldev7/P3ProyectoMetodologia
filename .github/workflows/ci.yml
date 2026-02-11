@@ -2,9 +2,9 @@ name: CI Pipeline con Pruebas y Coverage
 
 on:
   push:
-    branches: [ main, develop, angel ]
+    branches: [ main, develop, angel, Test ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, Test ]
 
 permissions:
   checks: write

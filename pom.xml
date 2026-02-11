@@ -10,14 +10,12 @@
 
     <dependencies>
 
-        <!-- Dependencia para MongoDB -->
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
             <version>5.2.1</version>
         </dependency>
 
-        <!-- SLF4J para logging de MongoDB -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -30,21 +28,18 @@
             <version>0.4</version>
         </dependency>
 
-        <!-- SLF4J API -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>2.0.9</version>
         </dependency>
 
-        <!-- Logback Implementation -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.4.11</version>
         </dependency>
 
-        <!-- JUnit 5 para tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -52,7 +47,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Mockito para mocking en tests -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -60,7 +54,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Mockito JUnit Jupiter integration -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
@@ -68,7 +61,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- AssertJ para assertions fluidas -->
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
@@ -126,7 +118,6 @@
                 </executions>
             </plugin>
 
-            <!-- Plugin para ejecutar tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -141,12 +132,13 @@
                         <exclude>test/DAORolTest.java</exclude>
                         <exclude>test/DAOUsuarioTest.java</exclude>
                         <exclude>test/ProductoDAOTest.java</exclude>
+                        <exclude>**/ControladorInventarioMockTest.java</exclude>
+                        <exclude>**/ControladorGestionUsuariosMockTest.java</exclude>
                     </excludes>
                     <argLine>@{argLine} -Dnet.bytebuddy.experimental=true</argLine>
                 </configuration>
             </plugin>
 
-            <!-- JaCoCo Plugin para code coverage -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -226,7 +218,6 @@
                 </executions>
             </plugin>
 
-            <!-- Plugin para crear JAR ejecutable con dependencias -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

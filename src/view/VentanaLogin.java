@@ -15,8 +15,8 @@ public class VentanaLogin extends JFrame {
     public JTextField txtUsuario;
     public JPasswordField txtContrasena;
     public JButton btnLogin;
-    private transient ListenerLogin listenerLogin;
-    private transient ServicioAutenticacion servicioAuth;
+    private ListenerLogin listenerLogin;
+    private ServicioAutenticacion servicioAuth;
     
 
     public interface ListenerLogin {
@@ -25,13 +25,13 @@ public class VentanaLogin extends JFrame {
     }
 
     public VentanaLogin() {
-        setTitle("Ferretería Carlín - Inicio de Sesión");
+        setTitle("🔧 Ferretería Carlín - Inicio de Sesión");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 450, 500);
         setResizable(false);
         setLocationRelativeTo(null);
         
-        // NO crear nueva instancia aquí - usar la de Main
+        // ❌ NO crear nueva instancia aquí - usar la de Main
         // servicioAuth = new ServicioAutenticacion();
         
         inicializarComponentes();
@@ -50,7 +50,7 @@ public class VentanaLogin extends JFrame {
         estiloCampoTexto(txtContrasena);
         
         // Botón
-        btnLogin = crearBoton("Iniciar Sesión", new Color(0, 123, 255));
+        btnLogin = crearBoton("🔑 Iniciar Sesión", new Color(0, 123, 255));
     }
 
     private void configurarEventos() {
@@ -82,8 +82,8 @@ public class VentanaLogin extends JFrame {
     }
 
     private void intentarLogin() {
-        String usuario = txtUsuario.getText().trim();
-        String contrasena = new String(txtContrasena.getPassword());
+    	String usuario = sanitizarEntrada(txtUsuario.getText().trim());
+    	String contrasena = new String(txtContrasena.getPassword());
         
         if (usuario.isEmpty() || contrasena.isEmpty()) {
             mostrarError("Por favor ingrese usuario y contraseña");
@@ -149,7 +149,7 @@ public class VentanaLogin extends JFrame {
         panel.setBackground(new Color(45, 45, 45));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         
-        JLabel etiquetaIcono = new JLabel("Ferretería");
+        JLabel etiquetaIcono = new JLabel("🔧");
         etiquetaIcono.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 64));
         etiquetaIcono.setForeground(new Color(0, 123, 255));
         etiquetaIcono.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -285,5 +285,12 @@ public class VentanaLogin extends JFrame {
         boton.setBorder(new LineBorder(colorFondo.darker(), 2));
         boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return boton;
+    }
+    
+    private String sanitizarEntrada(String entrada) {
+        if (entrada == null) return "";
+        
+        // Remover caracteres especiales peligrosos
+        return entrada.replaceAll("[<>\"';&=]", "");
     }
 }

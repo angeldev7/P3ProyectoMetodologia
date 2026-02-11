@@ -28,7 +28,7 @@ public class PanelReportes extends JPanel {
         estiloComboBox(cmbTipoReporte);
 
         // Botón
-        btnGenerarReporte = crearBoton("Generar Reporte", new Color(108, 117, 125));
+        btnGenerarReporte = crearBoton("📊 Generar Reporte", new Color(108, 117, 125));
 
         // Área de texto
         txtReporte = new JTextArea(20, 50);

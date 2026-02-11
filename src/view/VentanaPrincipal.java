@@ -8,10 +8,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import App.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class VentanaPrincipal extends JFrame {
     private static final long serialVersionUID = 1L;
-    
+    private static final Logger logger = LoggerFactory.getLogger(VentanaPrincipal.class);
     // Paneles principales
     public PanelProductos panelProductos;
     public PanelVentas panelVentas;
@@ -32,7 +35,7 @@ public class VentanaPrincipal extends JFrame {
     }
     
     private void configurarVentana() {
-        setTitle("Ferretería Carlín - Sistema de Gestión");
+        setTitle("🔧 Ferretería Carlín - Sistema de Gestión");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setMinimumSize(new Dimension(1200, 700));
@@ -79,7 +82,7 @@ public class VentanaPrincipal extends JFrame {
         JMenu menuSistema = new JMenu("Sistema");
         estiloMenu(menuSistema);
         
-        JMenuItem itemCerrarSesion = new JMenuItem("Cerrar Sesión");
+        JMenuItem itemCerrarSesion = new JMenuItem("🔒 Cerrar Sesión");
         estiloItemMenu(itemCerrarSesion);
         
         itemCerrarSesion.addActionListener(e -> Main.cerrarSesion());
@@ -102,9 +105,9 @@ public class VentanaPrincipal extends JFrame {
         setJMenuBar(barraMenu);
         
         // Agregar pestañas
-        panelPestanas.addTab("Gestión de Productos", panelProductos);
+        panelPestanas.addTab("📦 Gestión de Productos", panelProductos);
         panelPestanas.addTab("🛒 Módulo de Ventas", panelVentas);
-        panelPestanas.addTab("Reportes y Análisis", panelReportes);
+        panelPestanas.addTab("📊 Reportes y Análisis", panelReportes);
         panelPestanas.addTab("👥 Gestión de Usuarios", panelGestionUsuarios);
         
         add(panelPestanas, BorderLayout.CENTER);
@@ -145,7 +148,7 @@ public class VentanaPrincipal extends JFrame {
     
     // Métodos públicos para controlar la interfaz
     public void aplicarPermisos(List<String> permisos) {
-        System.out.println("Aplicando permisos: " + permisos);
+        logger.info("Aplicando permisos: " + permisos);
         
         // Habilitar/deshabilitar pestañas según permisos
         if (permisos == null || permisos.isEmpty()) {
@@ -173,18 +176,18 @@ public class VentanaPrincipal extends JFrame {
                                         permisos.contains("admin");
         panelPestanas.setEnabledAt(3, puedeGestionarUsuarios);
         
-        System.out.println("Permisos aplicados:");
-        System.out.println("  Gestión Productos: " + puedeGestionarProductos);
-        System.out.println("  Ventas: " + puedeVender);
-        System.out.println("  Reportes: " + puedeVerReportes);
-        System.out.println("  Gestión Usuarios: " + puedeGestionarUsuarios);
+        logger.info("Permisos aplicados:");
+        logger.info("  Gestión Productos: " + puedeGestionarProductos);
+        logger.info("  Ventas: " + puedeVender);
+        logger.info("  Reportes: " + puedeVerReportes);
+        logger.info("  Gestión Usuarios: " + puedeGestionarUsuarios);
     }
     
     public void habilitarTodasLasPestanas() {
         for (int i = 0; i < panelPestanas.getTabCount(); i++) {
             panelPestanas.setEnabledAt(i, true);
         }
-        System.out.println("Todas las pestañas habilitadas");
+        logger.info("Todas las pestañas habilitadas");
     }
     
     public void setTitle(String title) {
@@ -192,7 +195,7 @@ public class VentanaPrincipal extends JFrame {
     }
     
     public void setUsuarioActual(String usuario, String rol) {
-        lblEstadoUsuario.setText(usuario + " | " + rol);
+        lblEstadoUsuario.setText("👤 " + usuario + " | 🎭 " + rol);
     }
     
     // Método para obtener paneles (para el controlador)
